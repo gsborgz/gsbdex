@@ -12,7 +12,7 @@ export const metadata = {
   title: 'GSBDEX',
   description: 'Gabriel Borges Pokédex',
   icons: {
-    icon: '/borges_icon.png'
+    icon: '/pokeball.png'
   }
 };
 
