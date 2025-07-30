@@ -4,7 +4,7 @@ import { Pokemon, PokemonListResponse, PokemonSpecies } from '@models/pokemon';
 
 const BASE_URL = 'https://pokeapi.co/api/v2';
 
-export function usePokemonList(limit: number = 20) {
+export function usePokemonList(limit: number = 6) {
   return useInfiniteQuery({
     queryKey: ['pokemon-list', limit],
     initialPageParam: 0,
