@@ -51,47 +51,24 @@ function ErrorCard({ message }: { message?: string }) {
 }
 
 function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => void }) {
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    const currentRetryCount = parseInt(img.getAttribute('data-retry-count') || '0');
-    const maxRetries = 3; // Aumentado para 3 tentativas
-    
-    if (currentRetryCount < maxRetries) {
-      img.setAttribute('data-retry-count', (currentRetryCount + 1).toString());
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
 
-      const originalSrc = pokemon?.sprites.front_default;
-      if (originalSrc) {
-        // Delay progressivo mais agressivo: 2s, 5s, 10s
-        const retryDelay = currentRetryCount === 0 ? 2000 : currentRetryCount === 1 ? 5000 : 10000;
-        
-        setTimeout(() => {
-          // Verifica se o elemento ainda existe antes de tentar novamente
-          if (img.parentElement) {
-            // Remove parâmetros de query anteriores e adiciona novos
-            const cleanUrl = originalSrc.split('?')[0];
-            img.src = `${cleanUrl}?retry=${currentRetryCount + 1}&t=${Date.now()}&cache=bust`;
-          }
-        }, retryDelay);
-      }
-    } else {
-      img.src = '/missingno.png';
-      // Remove o atributo para limpar
-      img.removeAttribute('data-retry-count');
-    }
+    target.src = '/missingno.png';
   };
-
+  
   return (
     <Card onClick={onClick}>
       <div className='w-full flex justify-end'><Badge className='bg-slate-200/60 text-slate-600 dark:bg-slate-600/60 dark:text-slate-200'>#{pokemon.id.toString().padStart(3, '0')}</Badge></div>
       
       <Image
-        src={pokemon?.sprites.front_default || '/missingno.png'}
+        src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemon.id.toString().padStart(3, '0') + '.png'}
         alt={pokemon.name}
         width={200}
         height={200}
         className='w-24 h-24 mx-auto'
-        onError={handleImageError}
         data-retry-count="0"
+        onError={handleImageError}
         unoptimized
         loading="lazy"
         placeholder="blur"

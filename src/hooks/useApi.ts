@@ -1,5 +1,4 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
 import { Pokemon, PokemonListResponse, PokemonSpecies } from '@models/pokemon';
 
 const BASE_URL = 'https://pokeapi.co/api/v2';
