@@ -1,8 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: [
-      'assets.pokemon.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'assets.pokemon.com',
+        port: '',
+        pathname: '/assets/cms2/img/pokedex/**',
+      },
     ],
   },
 }

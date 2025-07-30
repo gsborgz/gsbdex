@@ -1,46 +1,19 @@
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { Pokemon, PokemonListResponse, PokemonSpecies } from '@models/pokemon';
 
 const BASE_URL = 'https://pokeapi.co/api/v2';
 
-export function usePokemonList(limit: number = 6) {
-  return useInfiniteQuery({
-    queryKey: ['pokemon-list', limit],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
-      const offset = pageParam * limit;
-      return fetchPokeApiData<PokemonListResponse>(`pokemon?limit=${limit}&offset=${offset}`);
-    },
-    getNextPageParam: (lastPage: PokemonListResponse, allPages: PokemonListResponse[]) => {
-      if (!lastPage.next) {
-        return undefined;
-      }
-
-      return allPages.length;
-    },
-  });
+export function usePokemonList() {
+  return fetchPokeApiData<PokemonListResponse>(`pokemon?limit=1025&offset=0`);
 };
 
 export function usePokemonDetails(idOrName: string) {
-  return useQuery({
-    queryKey: ['pokemon', idOrName],
-    queryFn: async () => {
-      return fetchPokeApiData<Pokemon>(`pokemon/${idOrName}`);
-    },
-    enabled: !!idOrName,
-  });
+  return fetchPokeApiData<Pokemon>(`pokemon/${idOrName}`);
 };
 
 export function usePokemonSpecies(url: string) {
   const id = getPokemonIdFromUrl(url);
 
-  return useQuery({
-    queryKey: ['pokemon-species', id],
-    queryFn: async () => {
-      return fetchPokeApiData<PokemonSpecies>(`pokemon-species/${id}`);
-    },
-    enabled: !!url,
-  });
+  return fetchPokeApiData<PokemonSpecies>(`pokemon-species/${id}`);
 };
 
 export function getPokemonIdFromUrl(url: string): number {

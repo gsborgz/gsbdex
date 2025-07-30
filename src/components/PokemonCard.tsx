@@ -4,6 +4,7 @@ import { Pokemon, PokemonListItem } from '@models/pokemon';
 import Badge from '@components/ui/Badge';
 import Image from 'next/image';
 import Skeleton from '@components/ui/Skeleton';
+import { useState } from 'react';
 
 interface PokemonCardProps {
   pokemon: PokemonListItem;
@@ -11,18 +12,33 @@ interface PokemonCardProps {
 }
 
 export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<Pokemon | null>(null);
   const pokemonId = getPokemonIdFromUrl(pokemon.url);
-  const { data: pokemonData, isLoading, error } = usePokemonDetails(pokemonId.toString());
+  
+  useState(() => {
+    usePokemonDetails(pokemonId.toString())
+      .then((pokemonData) => {
+        setData(pokemonData);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  });
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingCard />;
   }
 
-  if (error || !pokemonData) {
-    return <ErrorCard message={error?.message} />;
+  if (error) {
+    return <ErrorCard message={error} />;
   }
 
-  return <NormalCard pokemon={pokemonData} onClick={onClick} />;
+  return <NormalCard pokemon={data} onClick={onClick} />;
 }
 
 function LoadingCard() {
@@ -64,15 +80,11 @@ function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => voi
       <Image
         src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemon.id.toString().padStart(3, '0') + '.png'}
         alt={pokemon.name}
-        width={200}
-        height={200}
+        width={100}
+        height={100}
         className='w-24 h-24 mx-auto'
         data-retry-count="0"
         onError={handleImageError}
-        unoptimized
-        loading="lazy"
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
       />
 
       <h3 className='text-center text-lg font-semibold capitalize text-primary'>{pokemon.name}</h3>
