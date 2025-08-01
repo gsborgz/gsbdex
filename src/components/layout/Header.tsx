@@ -4,8 +4,10 @@ import ThemeToggle from '@components/ThemeToggle';
 import { LanguageToggle } from '@components/LanguageToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 
 export default function Header() {
+  const { t } = useTranslation();
   const currentRoute = usePathname();
   const isPokedex = currentRoute === '/';
   const isTeamBuilder = currentRoute === '/team-builder';
@@ -21,7 +23,7 @@ export default function Header() {
 
         <Link className="flex items-center space-x-2" href="/team-builder">
           <span className={`hidden font-bold sm:inline-block ${isTeamBuilder ? 'link-primary' : 'link-secondary'}`}>
-            Team Builder
+            {t('teamBuilder')}
           </span>
         </Link>
       </div>

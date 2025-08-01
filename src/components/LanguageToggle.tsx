@@ -15,37 +15,27 @@ export function LanguageToggle() {
   const [currentLanguage, setCurrentLanguage] = useState('pt');
 
   useEffect(() => {
-    const handleLanguageChange = (lng: string) => {
+    setCurrentLanguage(i18n.language);
+
+    const handleLanguageChanged = (lng: string) => {
       setCurrentLanguage(lng);
     };
 
-    if (i18n.isInitialized) {
-      setCurrentLanguage(i18n.language);
-      i18n.on('languageChanged', handleLanguageChange);
-    } else {
-      i18n.init().then(() => {
-        setCurrentLanguage(i18n.language);
-        i18n.on('languageChanged', handleLanguageChange);
-      });
-    }
+    i18n.on('languageChanged', handleLanguageChanged);
 
     return () => {
-      i18n.off('languageChanged', handleLanguageChange);
+      i18n.off('languageChanged', handleLanguageChanged);
     };
   }, []);
 
   const languages = [
     { code: 'pt', label: 'Português' },
     { code: 'en', label: 'English' },
-    { code: 'fr', label: 'Français' },
   ];
 
   const handleLanguageChange = (langCode: string) => {
-    if (i18n && typeof i18n.changeLanguage === 'function') {
-      i18n.changeLanguage(langCode);
-    } else {
-      console.error('i18n.changeLanguage is not available');
-    }
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('language', langCode);
   };
 
   return (

@@ -5,6 +5,7 @@ import Badge from '@components/ui/Badge';
 import Image from 'next/image';
 import Skeleton from '@components/ui/Skeleton';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface PokemonCardProps {
   pokemon: PokemonListItem;
@@ -57,16 +58,19 @@ function LoadingCard() {
 }
 
 function ErrorCard({ message }: { message?: string }) {
+  const { t } = useTranslation();
+
   return (
     <Card className="cursor-pointer transition-all duration-300 hover:shadow-lg">
       <div className="text-center text-red-500">
-        <p>Erro ao carregar os dados do Pokémon: {message || 'Erro desconhecido'}</p>
+        <p>{t('errorLoadingPokemon', { message: message || t('unknownError') })}</p>
       </div>
     </Card>
   );
 }
 
 function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => void }) {
+  const { t } = useTranslation();
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const target = e.target as HTMLImageElement;
 
@@ -91,7 +95,7 @@ function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => voi
 
       <div className='flex justify-center gap-2 mt-4'>
         {pokemon?.types.map((type) => (
-          <Badge key={type.type.name} className={`type-${type.type.name} text-slate-50 capitalize`}>{type.type.name}</Badge>
+          <Badge key={type.type.name} className={`type-${type.type.name} text-slate-50 capitalize`}>{t(`type.${type.type.name}`)}</Badge>
         ))}
       </div>
     </Card>

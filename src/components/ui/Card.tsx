@@ -8,7 +8,7 @@ interface CardProps {
 
 export default function Card({ children, className, onClick }: CardProps) {
   return (
-    <div onClick={onClick} className={concatClassNames('cursor-default border border-slate-400 dark:bg-slate-950 bg-slate-50 shadow-md rounded-lg p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 hover:-translate-y-1', className)}>
+    <div onClick={onClick} className={concatClassNames('cursor-default border border-slate-400 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 shadow-md rounded-lg p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 hover:-translate-y-1', className)}>
       {children}
     </div>
   );

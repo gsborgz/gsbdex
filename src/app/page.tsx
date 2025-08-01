@@ -8,6 +8,7 @@ import { PokemonListItem } from '../models/pokemon';
 import { Search } from 'lucide-react';
 import Input from '@components/ui/Input';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function Home() {
   const [data, setData] = useState<PokemonListItem[]>([]);
@@ -89,6 +90,7 @@ function ErrorList({ message }: { message: string }) {
 }
 
 function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedGeneration, setSelectedGeneration] = useState('');
@@ -147,7 +149,7 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
         <div className='relative'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
           <Input
-            placeholder='Pesquisar Pokémon por nome...'
+            placeholder={t('searchByNamePlaceholder')}
             value={searchTerm}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
             className='pl-10'

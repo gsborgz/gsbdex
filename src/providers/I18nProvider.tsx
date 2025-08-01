@@ -10,8 +10,10 @@ interface I18nProviderProps {
 
 export function I18nProvider({ children }: I18nProviderProps) {
   useEffect(() => {
-    if (!i18n.isInitialized) {
-      i18n.init();
+    const storedLanguage = localStorage.getItem('language');
+
+    if (storedLanguage && storedLanguage !== i18n.language) {
+      i18n.changeLanguage(storedLanguage);
     }
   }, []);
 
