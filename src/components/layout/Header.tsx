@@ -5,12 +5,18 @@ import { LanguageToggle } from '@components/LanguageToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 
 export default function Header() {
   const { t } = useTranslation();
   const currentRoute = usePathname();
   const isPokedex = currentRoute === '/';
   const isTeamBuilder = currentRoute === '/team-builder';
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <HeaderBar>
@@ -23,7 +29,7 @@ export default function Header() {
 
         <Link className="flex items-center space-x-2" href="/team-builder">
           <span className={`hidden font-bold sm:inline-block ${isTeamBuilder ? 'link-primary' : 'link-secondary'}`}>
-            {t('teamBuilder')}
+            {mounted ? t('teamBuilder') : 'Team Builder'}
           </span>
         </Link>
       </div>

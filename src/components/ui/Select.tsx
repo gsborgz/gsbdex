@@ -3,11 +3,13 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react'
 import { concatClassNames } from '@lib/utils'
 
 interface SelectContextType {
-  value?: string
-  onValueChange?: (value: string) => void
+  value?: any
+  onValueChange?: (value: any) => void
   open: boolean
   onOpenChange: (open: boolean) => void
   disabled?: boolean
+  valueLabels: Map<string, string>
+  setValueLabel: (value: string, label: string) => void
 }
 
 const SelectContext = React.createContext<SelectContextType | undefined>(undefined)
@@ -21,21 +23,24 @@ const useSelectContext = () => {
 }
 
 interface SelectProps {
-  children: React.ReactNode
-  value?: string
-  onValueChange?: (value: string) => void
+  options?: { value: any; label: string }[]
+  children?: React.ReactNode
+  onValueChange?: (value: any) => void
+  defaultValue?: any
+  value?: any
   disabled?: boolean
-  defaultValue?: string
+  placeholder?: string
 }
 
-const Select = ({ children, value, onValueChange, disabled, defaultValue }: SelectProps) => {
-  const [internalValue, setInternalValue] = React.useState(defaultValue || '')
+const Select = ({ children, value, onValueChange, disabled, defaultValue, options, placeholder }: SelectProps) => {
+  const [internalValue, setInternalValue] = React.useState(defaultValue)
   const [open, setOpen] = React.useState(false)
+  const [valueLabels, setValueLabels] = React.useState<Map<string, string>>(new Map())
 
   const isControlled = value !== undefined
   const currentValue = isControlled ? value : internalValue
 
-  const handleValueChange = React.useCallback((newValue: string) => {
+  const handleValueChange = React.useCallback((newValue: any) => {
     if (!isControlled) {
       setInternalValue(newValue)
     }
@@ -43,14 +48,51 @@ const Select = ({ children, value, onValueChange, disabled, defaultValue }: Sele
     setOpen(false)
   }, [isControlled, onValueChange])
 
+  const setValueLabel = React.useCallback((value: string, label: string) => {
+    setValueLabels(prev => new Map(prev).set(value, label))
+  }, [])
+
   const contextValue = React.useMemo(() => ({
     value: currentValue,
     onValueChange: handleValueChange,
     open,
     onOpenChange: setOpen,
-    disabled
-  }), [currentValue, handleValueChange, open, disabled])
+    disabled,
+    valueLabels,
+    setValueLabel
+  }), [currentValue, handleValueChange, open, disabled, valueLabels, setValueLabel])
 
+  // Se options são fornecidas, renderiza um select completo
+  if (options) {
+    const selectedOption = options.find(option => {
+      // Comparação mais robusta para objetos complexos
+      if (typeof option.value === 'object' && typeof currentValue === 'object') {
+        return JSON.stringify(option.value) === JSON.stringify(currentValue)
+      }
+      return option.value === currentValue
+    })
+
+    return (
+      <SelectContext.Provider value={contextValue}>
+        <div className="relative">
+          <SelectTrigger>
+            <SelectValue placeholder={placeholder}>
+              {selectedOption?.label || placeholder || 'Select an option...'}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option, index) => (
+              <SelectItem key={index} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </div>
+      </SelectContext.Provider>
+    )
+  }
+
+  // Caso contrário, usa children (forma composta)
   return (
     <SelectContext.Provider value={contextValue}>
       <div className="relative">
@@ -68,9 +110,16 @@ const SelectGroup = ({ children }: { children: React.ReactNode }) => (
 
 const SelectValue = React.forwardRef<
   HTMLSpanElement,
-  React.HTMLAttributes<HTMLSpanElement> & { placeholder?: string }
->(({ className, placeholder, ...props }, ref) => {
-  const { value } = useSelectContext()
+  React.HTMLAttributes<HTMLSpanElement> & { placeholder?: string; children?: React.ReactNode }
+>(({ className, placeholder, children, ...props }, ref) => {
+  const { value, valueLabels } = useSelectContext()
+  
+  const displayValue = React.useMemo(() => {
+    if (!value) return undefined
+    
+    const valueKey = typeof value === 'object' ? JSON.stringify(value) : String(value)
+    return valueLabels.get(valueKey) || valueKey
+  }, [value, valueLabels])
   
   return (
     <span
@@ -78,7 +127,7 @@ const SelectValue = React.forwardRef<
       className={concatClassNames('line-clamp-1', className)}
       {...props}
     >
-      {value || placeholder}
+      {children || displayValue || placeholder}
     </span>
   )
 })
@@ -108,7 +157,7 @@ const SelectTrigger = React.forwardRef<
       ref={ref}
       type="button"
       className={concatClassNames(
-        'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+        'flex h-10 w-full items-center cursor-pointer justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
         className
       )}
       onClick={handleClick}
@@ -198,7 +247,7 @@ const SelectContent = React.forwardRef<
     <div
       ref={contentRef}
       className={concatClassNames(
-        'absolute z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
+        'absolute z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border dark:bg-slate-950 bg-slate-50 dark:text-slate-50 text-slate-950 shadow-md animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
         position === 'popper' && 'top-full mt-1',
         className
       )}
@@ -227,14 +276,42 @@ SelectLabel.displayName = 'SelectLabel'
 
 const SelectItem = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { value: string; disabled?: boolean }
->(({ className, children, value, disabled, ...props }, ref) => {
-  const { value: selectedValue, onValueChange } = useSelectContext()
-  const isSelected = selectedValue === value
+  React.HTMLAttributes<HTMLDivElement> & { value: any; disabled?: boolean, isMultiple?: boolean }
+>(({ className, children, value, disabled, isMultiple, ...props }, ref) => {
+  const { value: selectedValue, onValueChange, setValueLabel } = useSelectContext()
+  
+  // Comparação mais robusta para objetos complexos
+  const isSelected = React.useMemo(() => {
+    if (typeof value === 'object' && typeof selectedValue === 'object') {
+      return JSON.stringify(value) === JSON.stringify(selectedValue)
+    }
+    return selectedValue === value
+  }, [selectedValue, value])
+
+  // Registra a label para este valor no contexto
+  React.useEffect(() => {
+    const valueKey = typeof value === 'object' ? JSON.stringify(value) : String(value)
+    let label = valueKey
+    if (typeof children === 'string') {
+      label = children
+    } else if (React.isValidElement(children)) {
+      // Tenta extrair texto dos children
+      const extractText = (element: React.ReactNode): string => {
+        if (typeof element === 'string') return element
+        if (typeof element === 'number') return element.toString()
+        if (React.isValidElement(element) && element.props) {
+          return extractText((element.props as any).children) || valueKey
+        }
+        return valueKey
+      }
+      label = extractText(children)
+    }
+    setValueLabel(valueKey, label)
+  }, [value, children, setValueLabel])
 
   const handleClick = () => {
     if (!disabled) {
-      onValueChange(value)
+      onValueChange?.(value)
     }
   }
 
@@ -251,7 +328,7 @@ const SelectItem = React.forwardRef<
       role="option"
       aria-selected={isSelected}
       className={concatClassNames(
-        'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground',
+        'relative flex w-full cursor-pointer select-none items-center rounded-sm p-2 text-sm outline-none text-slate-950 dark:text-slate-50 hover:bg-slate-300 dark:hover:bg-slate-700 focus:bg-slate-300 dark:focus:bg-slate-700',
         disabled && 'pointer-events-none opacity-50',
         className
       )}
@@ -260,9 +337,11 @@ const SelectItem = React.forwardRef<
       tabIndex={disabled ? -1 : 0}
       {...props}
     >
-      <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
-        {isSelected && <Check className='h-4 w-4' />}
-      </span>
+      {isMultiple && (
+        <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
+          {isSelected && <Check className='h-4 w-4' />}
+        </span>
+      )}
       {children}
     </div>
   )

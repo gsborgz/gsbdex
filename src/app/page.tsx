@@ -9,13 +9,14 @@ import { Search } from 'lucide-react';
 import Input from '@components/ui/Input';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import Card from '../components/ui/Card';
 
 export default function Home() {
   const [data, setData] = useState<PokemonListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  useState(() => {
+  useEffect(() => {
     usePokemonList()
       .then((response) => {
         const data = response.results;
@@ -28,14 +29,14 @@ export default function Home() {
       .finally(() => {
         setLoading(false);
       });
-  });
+  }, []);
 
   if (loading) {
     return <LoadingList />;
   }
 
   if (error) {
-    return <ErrorList message={error.message} />;
+    return <ErrorList message={error?.message} />;
   }
 
   return <NormalList allPokemon={data} />;
@@ -44,29 +45,31 @@ export default function Home() {
 function LoadingList() {
   return (
     <>
-      {/* Filters */}
-      <div className='flex flex-col md:flex-row items-center justify-center gap-8 text-center md:text-left'>
-        <h1 className='text-4xl md:text-5xl font-bold bg-gradient-to-r from-pokemon-blue to-pokemon-red bg-clip-text text-transparent mb-2'>
-          Pokédex
-        </h1>
-        <p className='text-muted-foreground text-lg'>
-          Descubra o mundo dos Pokémon
-        </p>
+      <div className='text-center mb-8'>
+        <div className='relative'>
+          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
+          <Input
+            placeholder='...'
+            className='pl-10'
+          />
+        </div>
       </div>
 
-      {/* Pokémon list */}
       <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4'>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className='bg-card rounded-lg p-4 shadow-sm'>
+        {Array.from({ length: 24 }).map((_, index) => (
+          <Card key={index} className='bg-card rounded-lg p-4 shadow-sm'>
             <div className='text-center space-y-3'>
+              <div className='w-full flex justify-end'><Skeleton className='h-5 w-12 rounded-full' /></div>
+
               <Skeleton className='h-24 w-24 mx-auto rounded-full' />
               <Skeleton className='h-4 w-20 mx-auto' />
-              <div className='flex gap-1 justify-center'>
+
+              <div className='flex justify-center gap-2 mt-4'>
                 <Skeleton className='h-5 w-12 rounded-full' />
                 <Skeleton className='h-5 w-12 rounded-full' />
               </div>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </>
@@ -74,18 +77,12 @@ function LoadingList() {
 }
 
 function ErrorList({ message }: { message: string }) {
+  const { t } = useTranslation();
+  
   return (
-    <>
-      <div className='text-center mb-8'>
-        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-pokemon-blue to-pokemon-red bg-clip-text text-transparent mb-2">
-          Pokédex
-        </h1>
-      </div>
-      
-      <div className="text-center text-red-500">
-        <p>Erro ao carregar os dados da Pokédex: {message}</p>
-      </div>
-    </>
+    <div className="text-center text-red-500">
+      <p>{t('errorLoadingPokedexData', { message })}</p>
+    </div>
   );
 }
 
@@ -145,6 +142,7 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
 
   return (
     <>
+      {/* Filters */}
       <div className='text-center mb-8'>
         <div className='relative'>
           <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
@@ -157,6 +155,7 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
         </div>
       </div>
 
+      {/* List */}
       <InfiniteScroll
         onLoadMore={loadMorePokemon}
         hasNextPage={hasNextPage}

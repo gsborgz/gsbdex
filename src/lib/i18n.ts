@@ -8,6 +8,14 @@ const resources = {
       errorLoadingPokemon: 'Erro ao carregar os dados do Pokémon: {{ message }}',
       unknownError: 'Erro desconhecido',
       teamBuilder: 'Construtor de Equipe',
+      returnToPokedex: 'Voltar para o Pokédex',
+      description: 'Descrição',
+      noDescription: 'Nenhuma descrição disponível para esta versão ou idioma selecionado',
+      selectVersion: 'Selecione a versão',
+      toggleLanguage: 'Alterar idioma',
+      height: 'Altura',
+      weight: 'Peso',
+      baseExperience: 'Experiência Base',
       type: {
         normal: 'Normal',
         fire: 'Fogo',
@@ -27,6 +35,46 @@ const resources = {
         dark: 'Sombrio',
         steel: 'Aço',
         fairy: 'Fada',
+      },
+      version: {
+        red: 'Red',
+        blue: 'Blue',
+        yellow: 'Yellow',
+        green: 'Green',
+        gold: 'Gold',
+        silver: 'Silver',
+        crystal: 'Crystal',
+        ruby: 'Ruby',
+        sapphire: 'Sapphire',
+        emerald: 'Emerald',
+        firered: 'FireRed',
+        leafgreen: 'LeafGreen',
+        diamond: 'Diamond',
+        pearl: 'Pearl',
+        platinum: 'Platinum',
+        heartgold: 'HeartGold',
+        soulsilver: 'SoulSilver',
+        black: 'Black',
+        white: 'White',
+        'black-2': 'Black 2',
+        'white-2': 'White 2',
+        x: 'X',
+        y: 'Y',
+        'omega-ruby': 'Omega Ruby',
+        'alpha-sapphire': 'Alpha Sapphire',
+        sun: 'Sun',
+        moon: 'Moon',
+        'ultra-sun': 'Ultra Sun',
+        'ultra-moon': 'Ultra Moon',
+        'lets-go-pikachu': 'Let\'s Go Pikachu',
+        'lets-go-eevee': 'Let\'s Go Eevee',
+        sword: 'Sword',
+        shield: 'Shield',
+        'brilliant-diamond': 'Brilliant Diamond',
+        'shining-pearl': 'Shining Pearl',
+        'legends-arceus': 'Legends Arceus',
+        scarlet: 'Scarlet',
+        violet: 'Violet'
       }
     },
   },
@@ -36,6 +84,14 @@ const resources = {
       errorLoadingPokemon: 'Error loading Pokémon data: {{ message }}',
       unknownError: 'Unknown error',
       teamBuilder: 'Team Builder',
+      returnToPokedex: 'Return to Pokédex',
+      description: 'Description',
+      noDescription: 'No description available for this version or selected language',
+      selectVersion: 'Select version',
+      toggleLanguage: 'Toggle language',
+      height: 'Height',
+      weight: 'Weight',
+      baseExperience: 'Base Experience',
       type: {
         normal: 'Normal',
         fire: 'Fire',
@@ -55,33 +111,150 @@ const resources = {
         dark: 'Dark',
         steel: 'Steel',
         fairy: 'Fairy',
+      },
+      version: {
+        red: 'Red',
+        blue: 'Blue',
+        yellow: 'Yellow',
+        green: 'Green',
+        gold: 'Gold',
+        silver: 'Silver',
+        crystal: 'Crystal',
+        ruby: 'Ruby',
+        sapphire: 'Sapphire',
+        emerald: 'Emerald',
+        firered: 'FireRed',
+        leafgreen: 'LeafGreen',
+        diamond: 'Diamond',
+        pearl: 'Pearl',
+        platinum: 'Platinum',
+        heartgold: 'HeartGold',
+        soulsilver: 'SoulSilver',
+        black: 'Black',
+        white: 'White',
+        'black-2': 'Black 2',
+        'white-2': 'White 2',
+        x: 'X',
+        y: 'Y',
+        'omega-ruby': 'Omega Ruby',
+        'alpha-sapphire': 'Alpha Sapphire',
+        sun: 'Sun',
+        moon: 'Moon',
+        'ultra-sun': 'Ultra Sun',
+        'ultra-moon': 'Ultra Moon',
+        'lets-go-pikachu': 'Let\'s Go Pikachu',
+        'lets-go-eevee': 'Let\'s Go Eevee',
+        sword: 'Sword',
+        shield: 'Shield',
+        'brilliant-diamond': 'Brilliant Diamond',
+        'shining-pearl': 'Shining Pearl',
+        'legends-arceus': 'Legends Arceus',
+        scarlet: 'Scarlet',
+        violet: 'Violet'
       }
     },
   },
+  fr: {
+    translation: {
+      searchByNamePlaceholder: 'Rechercher un Pokémon par nom...',
+      errorLoadingPokemon: 'Erreur lors du chargement des données du Pokémon : {{ message }}',
+      unknownError: 'Erreur inconnue',
+      teamBuilder: 'Constructeur d\'équipe',
+      returnToPokedex: 'Retour au Pokédex',
+      description: 'Description',
+      noDescription: 'Aucune description disponible pour cette version ou langue sélectionnée',
+      selectVersion: 'Sélectionner la version',
+      toggleLanguage: 'Changer de langue',
+      height: 'Hauteur',
+      weight: 'Poids',
+      baseExperience: 'Expérience de base',
+      type: {
+        normal: 'Normal',
+        fire: 'Feu',
+        water: 'Eau',
+        grass: 'Plante',
+        electric: 'Électrik',
+        ice: 'Glace',
+        fighting: 'Combat',
+        poison: 'Poison',
+        ground: 'Sol',
+        flying: 'Vol',
+        psychic: 'Psy',
+        bug: 'Insecte',
+        rock: 'Roche',
+        ghost: 'Spectre',
+        dragon: 'Dragon',
+        dark: 'Ténèbres',
+        steel: 'Acier',
+        fairy: 'Fée',
+      },
+      version: {
+        red: 'Rouge',
+        blue: 'Bleu',
+        yellow: 'Jaune',
+        green: 'Vert',
+        silver: 'Argent',
+        crystal: 'Cristal',
+        ruby: 'Rubis',
+        sapphire: 'Saphir',
+        emerald: 'Émeraude',
+        firered: 'Rouge Feu',
+        leafgreen: 'Vert Feuille',
+        diamond: 'Diamant',
+        pearl: 'Perle',
+        platinum: 'Platine',
+        heartgold: 'Or HeartGold',
+        soulsilver: 'Argent SoulSilver',
+        black: 'Noir',
+        white: 'Blanc',
+        'black-2': 'Noir 2',
+        'white-2': 'Blanc 2',
+        x: 'X',
+        y: 'Y',
+        'omega-ruby': 'Rubis Oméga',
+        'alpha-sapphire': 'Alpha Saphir',
+        sun: 'Soleil',
+        moon: 'Lune',
+        'ultra-sun': 'Ultra Soleil',
+        'ultra-moon': 'Ultra Lune',
+        'lets-go-pikachu': 'Let\'s Go Pikachu',
+        'lets-go-eevee': 'Let\'s Go Eevee',
+        sword: 'Épée',
+        shield: 'Bouclier',
+        'brilliant-diamond': 'Diamant Étincelant',
+        'shining-pearl': 'Perle Brillante',
+      }
+    },
+  }
 };
 
-const getInitialLanguage = () => {
+// Função para salvar o idioma no localStorage
+export const saveLanguageToStorage = (language: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('language', language);
+  }
+};
+
+// Função para obter o idioma do localStorage (apenas no cliente)
+export const getStoredLanguage = (): string => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('language') || 'pt';
   }
-
   return 'pt';
 };
 
-if (!i18n.isInitialized) {
-  i18n
-    .use(initReactI18next)
-    .init({
-      resources,
-      lng: getInitialLanguage(),
-      fallbackLng: 'pt',
-      interpolation: {
-        escapeValue: false,
-      },
-      react: {
-        useSuspense: false,
-      },
-    });
-}
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'pt', // Sempre inicializar com 'pt' para evitar problemas de hidratação
+  fallbackLng: 'pt',
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+// Salvar o idioma no localStorage sempre que ele mudar
+i18n.on('languageChanged', (lng: string) => {
+  saveLanguageToStorage(lng);
+});
 
 export default i18n;

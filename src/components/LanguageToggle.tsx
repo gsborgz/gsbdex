@@ -10,38 +10,55 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@components/ui/DropdownMenu';
+import { useTranslation } from 'react-i18next';
 
 export function LanguageToggle() {
-  const [currentLanguage, setCurrentLanguage] = useState('pt');
+  const { t, i18n: i18nInstance } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState<string>('');
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setCurrentLanguage(i18n.language);
+    setIsClient(true);
+    setCurrentLanguage(i18nInstance.language || 'pt');
 
-    const handleLanguageChanged = (lng: string) => {
+    const handleLanguageChange = (lng: string) => {
       setCurrentLanguage(lng);
     };
 
-    i18n.on('languageChanged', handleLanguageChanged);
+    i18nInstance.on('languageChanged', handleLanguageChange);
 
     return () => {
-      i18n.off('languageChanged', handleLanguageChanged);
+      i18nInstance.off('languageChanged', handleLanguageChange);
     };
-  }, []);
+  }, [i18nInstance]);
 
   const languages = [
     { code: 'pt', label: 'Português' },
     { code: 'en', label: 'English' },
+    { code: 'fr', label: 'Français' },
   ];
 
   const handleLanguageChange = (langCode: string) => {
-    i18n.changeLanguage(langCode);
-    localStorage.setItem('language', langCode);
+    if (i18nInstance && typeof i18nInstance.changeLanguage === 'function') {
+      i18nInstance.changeLanguage(langCode);
+    } else {
+      console.error('i18n.changeLanguage is not available');
+    }
   };
+
+  if (!isClient) {
+    return (
+      <Button variant='ghost' size='icon' title="Toggle language">
+        <Languages className='h-4 w-4 text-gray-950 dark:text-gray-50' />
+        <span className='sr-only'>Toggle language</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' size='icon'>
+        <Button variant='ghost' size='icon' title={t('toggleLanguage')}>
           <Languages className='h-4 w-4 text-gray-950 dark:text-gray-50' />
           <span className='sr-only'>Toggle language</span>
         </Button>

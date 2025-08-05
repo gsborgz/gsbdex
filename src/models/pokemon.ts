@@ -10,6 +10,13 @@ export interface Pokemon {
       };
     };
   };
+  game_indices: {
+    game_index: number;
+    version: {
+      name: string;
+      url: string;
+    };
+  }[];
   types: PokemonType[];
   height: number;
   weight: number;
@@ -50,12 +57,22 @@ export interface PokemonListItem {
 export interface PokemonSpecies {
   flavor_text_entries: FlavorTextEntry[];
   genera: Genus[];
+  names: {
+    name: string;
+    language: {
+      name: string;
+    };
+  }[];
 }
 
 export interface FlavorTextEntry {
   flavor_text: string;
   language: {
     name: string;
+  };
+  version: {
+    name: string;
+    url: string
   };
 }
 
