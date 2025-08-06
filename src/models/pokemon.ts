@@ -1,6 +1,10 @@
 export interface Pokemon {
   id: number;
   name: string;
+  cries: {
+    latest: string;
+    legacy: string;
+  },
   sprites: {
     front_default: string;
     front_shiny?: string;

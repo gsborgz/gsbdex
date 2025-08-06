@@ -13,15 +13,13 @@ export function I18nProvider({ children }: I18nProviderProps) {
 
   useEffect(() => {
     setIsClient(true);
-    
-    // Carregar idioma armazenado após a hidratação
+
     const storedLanguage = getStoredLanguage();
     if (storedLanguage && storedLanguage !== i18n.language) {
       i18n.changeLanguage(storedLanguage);
     }
   }, []);
 
-  // Durante a hidratação, garantir que o conteúdo seja consistente
   if (!isClient) {
     return (
       <I18nextProvider i18n={i18n}>

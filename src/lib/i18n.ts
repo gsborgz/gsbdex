@@ -228,14 +228,12 @@ const resources = {
   }
 };
 
-// Função para salvar o idioma no localStorage
 export const saveLanguageToStorage = (language: string): void => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('language', language);
   }
 };
 
-// Função para obter o idioma do localStorage (apenas no cliente)
 export const getStoredLanguage = (): string => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('language') || 'pt';
@@ -245,14 +243,13 @@ export const getStoredLanguage = (): string => {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: 'pt', // Sempre inicializar com 'pt' para evitar problemas de hidratação
+  lng: 'pt',
   fallbackLng: 'pt',
   interpolation: {
     escapeValue: false,
   },
 });
 
-// Salvar o idioma no localStorage sempre que ele mudar
 i18n.on('languageChanged', (lng: string) => {
   saveLanguageToStorage(lng);
 });

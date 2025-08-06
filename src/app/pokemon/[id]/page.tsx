@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
 import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
 import { ArrowLeft, Ruler, Star, Weight } from 'lucide-react';
@@ -93,22 +93,28 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
   const { t, i18n } = useTranslation();
   const availableVersions = getAvailableVersions(species);
   const initialDescription = getDescription(availableVersions[0].value, species, i18n.language) || t('noDescription');
+  const cry = pokemon.cries.latest;
   const [gameVersion, setGameVersion] = useState<string>(availableVersions[0].value);
   const [versionDescription, setVersionDescription] = useState<string>(initialDescription);
   const [pokemonName, setPokemonName] = useState<string>(getPokemonName(species, i18n.language));
   const [genus, setGenus] = useState<string>(getGenus(species, i18n.language));
-
-  // Usar useEffect para detectar mudanças de idioma
+  const audioRef = useRef<HTMLAudioElement>(null);
+  
   useEffect(() => {
     const description = getDescription(gameVersion, species, i18n.language) || t('noDescription');
+
     setVersionDescription(description);
     setPokemonName(getPokemonName(species, i18n.language));
     setGenus(getGenus(species, i18n.language));
+
+    if (audioRef.current) {
+      audioRef.current.volume = 0.05;
+    }
   }, [i18n.language, gameVersion, species, t]);
 
   return (
     <div className='flex flex-col rounded-lg'>
-      <div className='flex rounded-t-lg p-6 items-center bg-slate-200 dark:bg-slate-800'>
+      <div className='flex rounded-t-lg p-6 gap-4 items-center bg-slate-200 dark:bg-slate-800'>
         <Image
           src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemon.id.toString().padStart(3, '0') + '.png'}
           alt={pokemonName}
@@ -132,6 +138,12 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
               <Badge key={type.type.name} className={`type-${type.type.name} text-slate-50 capitalize`}>{t(`type.${type.type.name}`)}</Badge>
             ))}
           </div>
+        </div>
+
+        <div className='flex flex-1 items-center justify-center'>
+          <audio ref={audioRef} controls className='h-12 ml-4'>
+            <source src={cry} type='audio/mpeg' />
+          </audio>
         </div>
       </div>
 
@@ -162,7 +174,7 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
       <div className='flex flex-wrap gap-4 justify-center p-6'>
         <Card className='flex-1'>
           <div className='flex flex-col items-center'>
-            <Ruler className='h-8 w-8 mx-auto mb-2 text-pokemon-blue' />
+            <Ruler className='h-8 w-8 mx-auto mb-2 text-blue-500' />
             <div className='text-2xl font-bold text-foreground'>
               {(pokemon.height / 10).toFixed(1)}m
             </div>
@@ -172,7 +184,7 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
 
         <Card className='flex-1'>
           <div className='flex flex-col items-center'>
-            <Weight className='h-8 w-8 mx-auto mb-2 text-pokemon-red' />
+            <Weight className='h-8 w-8 mx-auto mb-2 text-red-500' />
             <div className='text-2xl font-bold text-foreground'>
               {(pokemon.weight / 10).toFixed(1)}kg
             </div>
@@ -182,7 +194,7 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
 
         <Card className='flex-1'>
           <div className='flex flex-col items-center'>
-            <Star className='h-8 w-8 mx-auto mb-2 text-pokemon-yellow' />
+            <Star className='h-8 w-8 mx-auto mb-2 text-yellow-300' />
             <div className='text-2xl font-bold text-foreground'>
               {pokemon.base_experience}
             </div>
@@ -190,8 +202,6 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
           </div>
         </Card>
       </div>
-
-      <Separator className='mx-6' />
     </div>
   );
 }
