@@ -9,7 +9,7 @@ import { I18nProvider } from '@providers/I18nProvider';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'GSBDEX',
+  title: 'GSBDEX (WIP)',
   description: 'Gabriel Borges Pokédex',
   icons: {
     icon: '/pokeball.png'
