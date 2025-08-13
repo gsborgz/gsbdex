@@ -29,7 +29,7 @@ export default function Header() {
 
         <Link className="flex items-center space-x-2" href="/team-builder">
           <span className={`hidden font-bold sm:inline-block ${isTeamBuilder ? 'link-primary' : 'link-secondary'}`}>
-            {mounted ? t('teamBuilder') : 'Team Builder'}
+            {mounted ? t('teamBuilder.title') : 'Team Builder'}
           </span>
         </Link>
       </div>

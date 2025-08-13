@@ -91,8 +91,8 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedGeneration, setSelectedGeneration] = useState('');
-  const [displayedCount, setDisplayedCount] = useState(24); // Número inicial de pokémons exibidos
-  const itemsPerPage = 12; // Quantos itens carregar por vez
+  const [displayedCount, setDisplayedCount] = useState(24);
+  const itemsPerPage = 12;
   const filteredPokemon = allPokemon.filter(pokemon => {
     const pokemonId = getPokemonIdFromUrl(pokemon.url);
 

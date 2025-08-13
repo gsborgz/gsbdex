@@ -12,14 +12,20 @@ import { useRouter } from 'next/navigation';
 
 interface PokemonCardProps {
   pokemon: PokemonListItem;
+  onClick?: (pokemon: Pokemon) => void;
+  fromTeamBuilder?: boolean;
 }
 
-export default function PokemonCard({ pokemon }: PokemonCardProps) {
+export default function PokemonCard({ pokemon, onClick, fromTeamBuilder }: PokemonCardProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<Pokemon | null>(null);
   const pokemonId = getPokemonIdFromUrl(pokemon.url);
-  
+  const router = useRouter();
+  const onCardClick = () => {
+    router.push(`/pokemon/${pokemonId}`);
+  };
+
   useEffect(() => {
     usePokemonDetails(pokemonId.toString())
       .then((pokemonData) => {
@@ -41,7 +47,7 @@ export default function PokemonCard({ pokemon }: PokemonCardProps) {
     return <ErrorCard message={error} />;
   }
 
-  return <NormalCard pokemon={data} />;
+  return <NormalCard pokemon={data} fromTeamBuilder onClick={(fromTeamBuilder ? () => onClick(data) : onCardClick)} />;
 }
 
 function LoadingCard() {
@@ -74,20 +80,16 @@ function ErrorCard({ message }: { message?: string }) {
   );
 }
 
-function NormalCard({ pokemon }: { pokemon: Pokemon }) {
+function NormalCard({ pokemon, onClick, fromTeamBuilder }: { pokemon: Pokemon, onClick: () => void, fromTeamBuilder?: boolean }) {
   const { t } = useTranslation();
-  const router = useRouter();
-  const onCardClick = () => {
-    router.push(`/pokemon/${pokemon.id}`);
-  };
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const target = e.target as HTMLImageElement;
 
     target.src = '/missingno.png';
   };
-  
+
   return (
-    <Card onClick={onCardClick} className='cursor-pointer'>
+    <Card onClick={onClick} className='cursor-pointer w-58'>
       <div className='w-full flex justify-end'><Badge className='bg-slate-200/60 text-slate-600 dark:bg-slate-600/60 dark:text-slate-200'>#{pokemon.id.toString().padStart(3, '0')}</Badge></div>
       
       <Image
