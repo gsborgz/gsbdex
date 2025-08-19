@@ -1,15 +1,15 @@
 'use client'
 
-import { getPokemonIdFromUrl, usePokemonList } from '@hooks/useApi';
+import { usePokemonList } from '@hooks/useApi';
 import Skeleton from '@components/ui/Skeleton';
 import InfiniteScroll from '@components/InifiniteScroll';
 import PokemonCard from '@components/PokemonCard';
-import { PokemonListItem } from '../models/pokemon';
+import { PokemonListItem } from '@models/pokemon';
 import { Search } from 'lucide-react';
 import Input from '@components/ui/Input';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import Card from '../components/ui/Card';
+import Card from '@components/ui/Card';
 
 export default function Home() {
   const [data, setData] = useState<PokemonListItem[]>([]);
@@ -89,33 +89,9 @@ function ErrorList({ message }: { message: string }) {
 function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedGeneration, setSelectedGeneration] = useState('');
   const [displayedCount, setDisplayedCount] = useState(24);
   const itemsPerPage = 12;
   const filteredPokemon = allPokemon.filter(pokemon => {
-    const pokemonId = getPokemonIdFromUrl(pokemon.url);
-
-    if (selectedGeneration) {
-      const genRanges = {
-        '1': [1, 151],
-        '2': [152, 251],
-        '3': [252, 386],
-        '4': [387, 493],
-        '5': [494, 649],
-        '6': [650, 721],
-        '7': [722, 809],
-        '8': [810, 905],
-        '9': [906, 1025],
-      };
-
-      const [min, max] = genRanges[selectedGeneration as keyof typeof genRanges] || [0, 0];
-
-      if (pokemonId < min || pokemonId > max) {
-        return false
-      };
-    }
-
     if (searchTerm && !pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false;
     }
@@ -129,16 +105,10 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
       setDisplayedCount(prev => Math.min(prev + itemsPerPage, filteredPokemon.length));
     }
   };
-  const clearFilters = () => {
-    setSearchTerm('');
-    setSelectedTypes([]);
-    setSelectedGeneration('');
-    setDisplayedCount(itemsPerPage);
-  };
 
   useEffect(() => {
     setDisplayedCount(itemsPerPage);
-  }, [searchTerm, selectedGeneration]);
+  }, [searchTerm]);
 
   return (
     <>

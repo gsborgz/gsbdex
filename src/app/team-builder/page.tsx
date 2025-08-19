@@ -100,7 +100,6 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
     setSelectedTeam(null);
   };
 
-  // when a selectedTeam is set from MyTeams, populate the builder once
   useEffect(() => {
     if (selectedTeam) {
       setTeam(selectedTeam);
@@ -252,16 +251,58 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
       setActiveTab('builder');
     }
   };
-  const handleImportTeams = () => {};
-  const handleExportTeams = () => {};
+  const handleImportTeams = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json, .json';
 
-  if (!teams || teams.length === 0) {
-    return (
-      <div className='flex flex-col gap-6'>
-        <p className='text-sm text-slate-500'>{t('teamBuilder.noSavedTeams')}</p>
-      </div>
-    );
-  }
+    input.onchange = async (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+
+      if (!file || file.type !== 'application/json') return;
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+
+        if (!Array.isArray(parsed)) {
+          throw new Error(t('teamBuilder.invalidFileFormat'));
+        }
+
+        const normalized = parsed.map((item: any) => ({
+          id: typeof item.id === 'string' ? item.id : `${new Date().getTime()}-${Math.random().toString(36).slice(2, 11)}`,
+          name: typeof item.name === 'string' ? item.name : String(item.name ?? 'Imported Team'),
+          members: Array.isArray(item.members) ? item.members : []
+        }));
+
+        setTeams(normalized);
+      } catch (err) {
+        console.error(t('teamBuilder.failedToImportTeams'), err);
+      }
+    };
+
+    input.click();
+  };
+
+  const handleExportTeams = () => {
+    try {
+      const json = JSON.stringify(teams, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+
+      anchor.href = url;
+      anchor.download = `gsbdex-teams-${timestamp}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(t('teamBuilder.failedToExportTeams'), err);
+    }
+  };
 
   return (
     <div className='flex flex-col gap-6'>
@@ -285,6 +326,7 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
           {t('teamBuilder.exportTeams')}
         </Button>
       </div>
+
       {teams.map((savedTeam, index) => (
         <div key={index} className='flex flex-col gap-2 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-6 rounded-md'>
           <div className='flex items-center justify-between flex-1'>
@@ -302,9 +344,15 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
           </div>
 
           <div className='flex gap-3'>
-            {savedTeam.members.map((member, index) => (
-              <PokemonCard key={index} pokemon={member} fromTeamBuilder />
-            ))}
+            {!teams.length ? (
+              <div className='flex flex-col gap-6'>
+                <p className='text-sm text-slate-500'>{t('teamBuilder.noSavedTeams')}</p>
+              </div>
+            ) : (
+              savedTeam.members.map((member, index) => (
+                <PokemonCard key={index} pokemon={member} fromTeamBuilder />
+              ))
+            )}
           </div>
         </div>
       ))}
