@@ -6,7 +6,7 @@ import { Button } from '@components/ui/Button';
 import { Pen, Check, Plus, Search, Trash } from 'lucide-react';
 import Input from '@components/ui/Input';
 import InfiniteScroll from '@components/InifiniteScroll';
-import { Pokemon, PokemonListItem } from '@models/pokemon';
+import { PokemonListItem } from '@models/pokemon';
 import { usePokemonList } from '@hooks/useApi';
 import PokemonCard from '@components/PokemonCard';
 
@@ -41,7 +41,6 @@ export default function TeamBuilder() {
         <MyTeams
           teams={teams}
           setTeams={setTeams}
-          selectedTeam={selectedTeam}
           setSelectedTeam={setSelectedTeam}
           setActiveTab={setActiveTab}
         />
@@ -50,7 +49,7 @@ export default function TeamBuilder() {
   );
 }
 
-function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab }: { teams: PokemonTeam[], setTeams: React.Dispatch<React.SetStateAction<PokemonTeam[]>>, selectedTeam: PokemonTeam, setSelectedTeam: React.Dispatch<React.SetStateAction<PokemonTeam>>, setActiveTab: React.Dispatch<React.SetStateAction<string>> }) {
+function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab }: { teams: PokemonTeam[], setTeams: React.Dispatch<React.SetStateAction<PokemonTeam[]>>, selectedTeam: PokemonTeam | null, setSelectedTeam: React.Dispatch<React.SetStateAction<PokemonTeam | null>>, setActiveTab: React.Dispatch<React.SetStateAction<string>> }) {
   const { t } = useTranslation();
   const [data, setData] = useState<PokemonListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,10 +76,10 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
   };
   const handlePokemonClick = (pokemon: PokemonListItem) => {
     const { members } = team;
-    const exists = members.find(member => member?.id === pokemon.id);
+    const exists = members.find(member => member.name === pokemon.name);
 
     if (exists) {
-      setTeam({ ...team, members: members.filter(member => member?.id !== pokemon.id) });
+      setTeam({ ...team, members: members.filter(member => member.name !== pokemon.name) });
     } else if (members.length < 6) {
       setTeam({ ...team, members: [...members, pokemon] });
     }
@@ -95,17 +94,19 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
       setTeams([...teams, team]);
     }
 
-    setSelectedTeam(team);
     setActiveTab('my-teams');
-
-    setTeamNameEdit(null);
-    setTeam(null);
+    setTeamNameEdit(t('teamBuilder.newTeam'));
+    setTeam({ id: `${new Date().getTime()}-${Math.random().toString(36).slice(2, 11)}`, name: t('teamBuilder.newTeam'), members: [] });
+    setSelectedTeam(null);
   };
 
-  if (selectedTeam) {
-    setTeam(selectedTeam);
-    setTeamNameEdit(selectedTeam.name);
-  }
+  // when a selectedTeam is set from MyTeams, populate the builder once
+  useEffect(() => {
+    if (selectedTeam) {
+      setTeam(selectedTeam);
+      setTeamNameEdit(selectedTeam.name);
+    }
+  }, [selectedTeam]);
 
   useEffect(() => {
     usePokemonList()
@@ -234,7 +235,7 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
   );
 }
 
-function MyTeams({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab }: { teams: PokemonTeam[], setTeams: React.Dispatch<React.SetStateAction<PokemonTeam[]>>, selectedTeam: PokemonTeam, setSelectedTeam: React.Dispatch<React.SetStateAction<PokemonTeam>>, setActiveTab: React.Dispatch<React.SetStateAction<string>> }) {
+function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: PokemonTeam[], setTeams: React.Dispatch<React.SetStateAction<PokemonTeam[]>>, setSelectedTeam: React.Dispatch<React.SetStateAction<PokemonTeam | null>>, setActiveTab: React.Dispatch<React.SetStateAction<string>> }) {
   const { t } = useTranslation();
   const handleRemoveTeam = (id: string) => {
     setTeams(prevTeams => {
@@ -263,7 +264,7 @@ function MyTeams({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
   return (
     <div className='flex flex-col gap-6'>
       {teams.map((savedTeam, index) => (
-        <div key={index} className={`flex flex-col gap-2 border ${savedTeam.id === selectedTeam.id ? 'border-blue-500' : 'border-slate-400'} bg-slate-100 dark:bg-slate-900 p-6 rounded-md`}>
+        <div key={index} className='flex flex-col gap-2 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-6 rounded-md'>
           <div className='flex items-center justify-between flex-1'>
             <p className='text-lg font-semibold'>{savedTeam.name}</p>
             
@@ -278,7 +279,7 @@ function MyTeams({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
             </div>
           </div>
 
-          <div className='flex gap-1'>
+          <div className='flex gap-3'>
             {savedTeam.members.map((member, index) => (
               <PokemonCard key={index} pokemon={member} fromTeamBuilder />
             ))}
