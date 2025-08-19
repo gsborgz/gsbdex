@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
-import { Pen, Check, Plus, Search, Trash } from 'lucide-react';
+import { Pen, Check, Plus, Search, Trash, CloudDownload, CloudUpload } from 'lucide-react';
 import Input from '@components/ui/Input';
 import InfiniteScroll from '@components/InifiniteScroll';
 import { PokemonListItem } from '@models/pokemon';
@@ -252,6 +252,8 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
       setActiveTab('builder');
     }
   };
+  const handleImportTeams = () => {};
+  const handleExportTeams = () => {};
 
   if (!teams || teams.length === 0) {
     return (
@@ -263,6 +265,26 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
 
   return (
     <div className='flex flex-col gap-6'>
+      <div className='flex items-center justify-center gap-2'>
+        <Button
+          className='text-slate-100 dark:text-slate-900'
+          primary
+          onClick={handleImportTeams}
+        >
+          <CloudUpload className='h-4 w-4 mr-2' />
+          {t('teamBuilder.importTeams')}
+        </Button>
+
+        <Button
+          className='text-slate-100 dark:text-slate-900'
+          primary
+          onClick={handleExportTeams}
+          disabled={teams.length === 0}
+        >
+          <CloudDownload className='h-4 w-4 mr-2' />
+          {t('teamBuilder.exportTeams')}
+        </Button>
+      </div>
       {teams.map((savedTeam, index) => (
         <div key={index} className='flex flex-col gap-2 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-6 rounded-md'>
           <div className='flex items-center justify-between flex-1'>

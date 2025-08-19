@@ -21,6 +21,8 @@ const resources = {
       teamBuilder: {
         title: 'Construtor de Times',
         noSavedTeams: 'Nenhum time salvo',
+        importTeams: 'Importar Times',
+        exportTeams: 'Exportar Times',
         builder: 'Construtor',
         newTeam: 'Novo Time',
         myTeams: 'Meus Times',
@@ -109,6 +111,8 @@ const resources = {
       teamBuilder: {
         noSavedTeams: 'No saved teams',
         title: 'Team Builder',
+        importTeams: 'Import Teams',
+        exportTeams: 'Export Teams',
         builder: 'Builder',
         newTeam: 'New Team',
         myTeams: 'My Teams',
@@ -196,6 +200,8 @@ const resources = {
       teamBuilder: {
         title: 'Constructeur d\'équipe',
         noSavedTeams: 'Aucune équipe enregistrée',
+        importTeams: 'Importer des équipes',
+        exportTeams: 'Exporter des équipes',
         builder: 'Constructeur',
         newTeam: 'Nouvelle équipe',
         myTeams: 'Mes équipes',
