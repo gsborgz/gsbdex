@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
 import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
-import { ArrowLeft, Ruler, Star, Weight } from 'lucide-react';
+import { ArrowLeft, Ruler, Star, Weight, Play, Pause } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
 import Skeleton from '@components/ui/Skeleton';
@@ -53,7 +53,7 @@ export default function PokemonDetails() {
         </Button>
       </div>
 
-      <div className='mx-50'>
+      <div className='container max-w-4xl mx-auto py-8 space-y-8'>
         <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950'>
           { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && <NormalDetails pokemon={pokemon} species={species} />) }
         </div>
@@ -99,6 +99,7 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
   const [pokemonName, setPokemonName] = useState<string>(getPokemonName(species, i18n.language));
   const [genus, setGenus] = useState<string>(getGenus(species, i18n.language));
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
   
   useEffect(() => {
     const description = getDescription(gameVersion, species, i18n.language) || t('noDescription');
@@ -112,15 +113,34 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
     }
   }, [i18n.language, gameVersion, species, t]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onEnded = () => setIsPlaying(false);
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('ended', onEnded);
+
+    return () => {
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('ended', onEnded);
+    };
+  }, []);
+
   return (
     <div className='flex flex-col rounded-lg'>
       <div className='flex rounded-t-lg p-6 gap-4 items-center bg-slate-200 dark:bg-slate-800'>
         <Image
-          src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemon.id.toString().padStart(3, '0') + '.png'}
+          src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/${pokemon.id.toString().padStart(3, '0')}.png`}
           alt={pokemonName}
           width={250}
           height={250}
-          className='w-50 h-50'
+          className='w-20 h-20 md:w-30 md:h-30 lg:w-50 lg:h-50'
           data-retry-count='0'
           onError={handleImageError}
         />
@@ -129,8 +149,8 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
           <span className='text-sm text-gray-500'>#{pokemon.id.toString().padStart(3, '0')}</span>
           
           <div className='flex flex-col'>
-            <span className='text-2xl font-bold capitalize'>{pokemonName}</span>
-            <span className='text-sm text-gray-500'>{genus}</span>
+            <span className='text-md md:text-2xl font-bold capitalize'>{pokemonName}</span>
+            <span className='text-xs md:text-sm text-gray-500'>{genus}</span>
           </div>
 
           <div className='flex gap-2 mt-2'>
@@ -141,9 +161,26 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
         </div>
 
         <div className='flex flex-1 items-center justify-center'>
-          <audio ref={audioRef} controls className='h-12 ml-4'>
+          <audio ref={audioRef} className='hidden' preload='auto'>
             <source src={cry} type='audio/mpeg' />
           </audio>
+
+          <button
+            onClick={() => {
+              const audio = audioRef.current;
+              if (!audio) return;
+
+              if (audio.paused) {
+                audio.play();
+              } else {
+                audio.pause();
+              }
+            }}
+            aria-label={isPlaying ? t('pause') : t('play')}
+            className='cursor-pointer h-8 w-8 md:h-12 md:w-12 flex items-center justify-center rounded-full border border-slate-400 bg-slate-100 dark:bg-slate-700 ml-4'
+          >
+            {isPlaying ? <Pause className='h-3 w-3 md:h-6 md:w-6' /> : <Play className='h-3 w-3 md:h-6 md:w-6' />}
+          </button>
         </div>
       </div>
 
