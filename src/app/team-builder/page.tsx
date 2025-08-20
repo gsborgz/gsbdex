@@ -3,12 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
-import { Pen, Check, Plus, Search, Trash, CloudDownload, CloudUpload } from 'lucide-react';
+import { Pen, Check, Plus, Trash, CloudDownload, CloudUpload } from 'lucide-react';
 import Input from '@components/ui/Input';
-import InfiniteScroll from '@components/InifiniteScroll';
 import { PokemonListItem } from '@models/pokemon';
-import { usePokemonList } from '@hooks/useApi';
 import PokemonCard from '@components/PokemonCard';
+import PokemonList from '@components/PokemonList';
 
 interface PokemonTeam {
   id: string;
@@ -51,29 +50,9 @@ export default function TeamBuilder() {
 
 function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab }: { teams: PokemonTeam[], setTeams: React.Dispatch<React.SetStateAction<PokemonTeam[]>>, selectedTeam: PokemonTeam | null, setSelectedTeam: React.Dispatch<React.SetStateAction<PokemonTeam | null>>, setActiveTab: React.Dispatch<React.SetStateAction<string>> }) {
   const { t } = useTranslation();
-  const [data, setData] = useState<PokemonListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
   const [canEditTeamName, setCanEditTeamName] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [displayedCount, setDisplayedCount] = useState(24);
   const [teamNameEdit, setTeamNameEdit] = useState(t('teamBuilder.newTeam'));
   const [team, setTeam] = useState<PokemonTeam>({ id: `${new Date().getTime()}-${Math.random().toString(36).slice(2, 11)}`, name: t('teamBuilder.newTeam'), members: [] });
-  const itemsPerPage = 12;
-  const filteredPokemon = data.filter(pokemon => {
-    if (searchTerm && !pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-      return false;
-    }
-
-    return true;
-  });
-  const visiblePokemon = filteredPokemon.slice(0, displayedCount);
-  const hasNextPage = displayedCount < filteredPokemon.length;
-  const loadMorePokemon = () => {
-    if (hasNextPage) {
-      setDisplayedCount(prev => Math.min(prev + itemsPerPage, filteredPokemon.length));
-    }
-  };
   const handlePokemonClick = (pokemon: PokemonListItem) => {
     const { members } = team;
     const exists = members.find(member => member.name === pokemon.name);
@@ -106,21 +85,6 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
       setTeamNameEdit(selectedTeam.name);
     }
   }, [selectedTeam]);
-
-  useEffect(() => {
-    usePokemonList()
-      .then((response) => {
-        const data = response.results;
-
-        setData(data);
-      })
-      .catch((err) => {
-        setError(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
 
   return (
     <div className='flex flex-col gap-6'>
@@ -184,52 +148,7 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
         )}
       </div>
 
-      <div className='text-center'>
-        <div className='relative'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4' />
-          <Input
-            placeholder={t('searchByNamePlaceholder')}
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            className='pl-10'
-          />
-        </div>
-      </div>
-
-      <InfiniteScroll
-        onLoadMore={loadMorePokemon}
-        hasNextPage={hasNextPage}
-        isFetchingNextPage={false}
-      >
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8'>
-          {loading && (
-            <div className='col-span-full text-center py-4'>
-              <p className='text-sm text-slate-500'>{t('loading')}</p>
-            </div>
-          )}
-
-          {visiblePokemon.length === 0 && !loading && (
-            <div className='col-span-full text-center py-4'>
-              <p className='text-sm text-slate-500'>{t('noResults')}</p>
-            </div>
-          )}
-
-          {error && (
-            <div className='col-span-full text-center py-4'>
-              <p className='text-sm text-slate-500'>{t('error')}</p>
-            </div>
-          )}
-
-          {visiblePokemon.map((pokemon) => (
-            <PokemonCard
-              key={pokemon.name}
-              pokemon={pokemon}
-              fromTeamBuilder
-              onClick={(pokemon) => handlePokemonClick(pokemon)}
-            />
-          ))}
-        </div>
-      </InfiniteScroll>
+      <PokemonList onCardClick={handlePokemonClick} />
     </div>
   );
 }
