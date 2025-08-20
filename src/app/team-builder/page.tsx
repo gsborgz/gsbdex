@@ -6,8 +6,9 @@ import { Button } from '@components/ui/Button';
 import { Pen, Check, Plus, Trash, CloudDownload, CloudUpload } from 'lucide-react';
 import Input from '@components/ui/Input';
 import { PokemonListItem } from '@models/pokemon';
-import PokemonCard from '@components/PokemonCard';
 import PokemonList from '@components/PokemonList';
+import Image from 'next/image';
+import { getPokemonIdFromUrl } from '@hooks/useApi';
 
 interface PokemonTeam {
   id: string;
@@ -53,14 +54,18 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
   const [canEditTeamName, setCanEditTeamName] = useState(false);
   const [teamNameEdit, setTeamNameEdit] = useState(t('teamBuilder.newTeam'));
   const [team, setTeam] = useState<PokemonTeam>({ id: `${new Date().getTime()}-${Math.random().toString(36).slice(2, 11)}`, name: t('teamBuilder.newTeam'), members: [] });
-  const handlePokemonClick = (pokemon: PokemonListItem) => {
+  const addPokemonToTeam = (pokemon: PokemonListItem) => {
     const { members } = team;
-    const exists = members.find(member => member.name === pokemon.name);
 
-    if (exists) {
-      setTeam({ ...team, members: members.filter(member => member.name !== pokemon.name) });
-    } else if (members.length < 6) {
+    if (members.length < 6) {
       setTeam({ ...team, members: [...members, pokemon] });
+    }
+  };
+  const removePokemonFromTeam = (index: number) => {
+    const { members } = team;
+
+    if (members[index]) {
+      setTeam({ ...team, members: members.filter((_, i) => i !== index) });
     }
   };
   const handleTitleChange = (newTitle: string) => {
@@ -136,19 +141,23 @@ function Builder({ teams, setTeams, selectedTeam, setSelectedTeam, setActiveTab 
         </Button>
       </div>
 
-      <div className='flex gap-2 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-6 rounded-md'>
-        {team.members.length > 0 ? (
-            team.members.map((member, index) => (
-              <PokemonCard key={index} pokemon={member} fromTeamBuilder onClick={(pokemon) => handlePokemonClick(pokemon)} />
-            ))
-        ) : (
-          <div className='flex-1 text-center p-10'>
-            <p className='text-sm text-slate-500'>{t('teamBuilder.noMembers')}</p>
+      {!!team.members.length && (
+        <>
+          <div className='flex flex-wrap items-center justify-center gap-2 md:gap-4 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-2 lg:p-6 rounded-md'>
+            {team.members.map((member, index) => (
+              <MemberCard key={index} data={member} onClick={() => removePokemonFromTeam(index)} />
+            ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
-      <PokemonList onCardClick={handlePokemonClick} />
+      {!team.members.length && (
+        <div className='flex-1 text-center p-10'>
+          <p className='text-sm text-slate-500'>{t('teamBuilder.noMembers')}</p>
+        </div>
+      )}
+
+      <PokemonList onCardClick={addPokemonToTeam} />
     </div>
   );
 }
@@ -202,7 +211,6 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
 
     input.click();
   };
-
   const handleExportTeams = () => {
     try {
       const json = JSON.stringify(teams, null, 2);
@@ -247,7 +255,7 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
       </div>
 
       {teams.map((savedTeam, index) => (
-        <div key={index} className='flex flex-col gap-2 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-6 rounded-md'>
+        <div key={index} className='flex flex-col gap-2 border border-slate-400 bg-slate-100 dark:bg-slate-900 p-2 md:p-6 rounded-md'>
           <div className='flex items-center justify-between flex-1'>
             <p className='text-lg font-semibold'>{savedTeam.name}</p>
             
@@ -262,14 +270,14 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
             </div>
           </div>
 
-          <div className='flex gap-3'>
+          <div className='flex flex-wrap items-center justify-center gap-3'>
             {!teams.length ? (
               <div className='flex flex-col gap-6'>
                 <p className='text-sm text-slate-500'>{t('teamBuilder.noSavedTeams')}</p>
               </div>
             ) : (
               savedTeam.members.map((member, index) => (
-                <PokemonCard key={index} pokemon={member} fromTeamBuilder />
+                <MemberCard key={index} data={member} />
               ))
             )}
           </div>
@@ -277,4 +285,29 @@ function MyTeams({ teams, setTeams, setSelectedTeam, setActiveTab }: { teams: Po
       ))}
     </div>
   );
+}
+
+function MemberCard({ data, onClick }: { data: PokemonListItem, onClick?: () => void }) {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.target as HTMLImageElement;
+
+    target.src = '/missingno.png';
+  };
+
+  return (
+    <div onClick={onClick} className='cursor-pointer border border-slate-400 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 shadow-md rounded-lg p-3 md:p-6 min-w-30 min-h-30 md:min-w-min md:min-h-min lg:min-w-55 max-w-55 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 hover:-translate-y-1'>
+      <Image
+        src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + getPokemonIdFromUrl(data.url).toString().padStart(3, '0') + '.png'}
+        alt={data.name}
+        width={100}
+        height={100}
+        className='w-20 h-20 sm:w-35 sm:h-35 md:w-30 md:h-30 mx-auto'
+        data-retry-count="0"
+        onError={handleImageError}
+      />
+
+      <h3 className='text-center text-xs sm:text-sm md:text-2xl font-semibold capitalize text-primary break-words'>{data.name}</h3>
+    </div>
+  );
+
 }

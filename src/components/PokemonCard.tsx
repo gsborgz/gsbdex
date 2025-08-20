@@ -13,10 +13,9 @@ import { useRouter } from 'next/navigation';
 interface PokemonCardProps {
   pokemon: PokemonListItem;
   onClick?: (pokemon: PokemonListItem) => void;
-  fromTeamBuilder?: boolean;
 }
 
-export default function PokemonCard({ pokemon, onClick, fromTeamBuilder }: PokemonCardProps) {
+export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
   if (!pokemon) return null;
 
   const [loading, setLoading] = useState(true);
@@ -49,7 +48,7 @@ export default function PokemonCard({ pokemon, onClick, fromTeamBuilder }: Pokem
     return <ErrorCard message={error} />;
   }
 
-  return <NormalCard pokemon={data} fromTeamBuilder onClick={(fromTeamBuilder ? () => onClick(pokemon) : onCardClick)} />;
+  return <NormalCard pokemon={data} onClick={(!!onClick ? () => onClick(pokemon) : onCardClick)} />;
 }
 
 function LoadingCard() {

@@ -87,7 +87,6 @@ export default function PokemonList({ onCardClick }: { onCardClick?: (pokemon: P
             <PokemonCard
               key={pokemon.name}
               pokemon={pokemon}
-              fromTeamBuilder
               onClick={onCardClick}
             />
           ))}
