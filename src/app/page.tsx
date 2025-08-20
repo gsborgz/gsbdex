@@ -120,7 +120,7 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
             placeholder={t('searchByNamePlaceholder')}
             value={searchTerm}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            className='pl-10'
+            className='pl-10 text-xs md:text-sm'
           />
         </div>
       </div>
@@ -131,7 +131,7 @@ function NormalList({ allPokemon }: { allPokemon: PokemonListItem[] }) {
         hasNextPage={hasNextPage}
         isFetchingNextPage={false}
       >
-        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8'>
+        <div className='flex flex-wrap gap-4 mb-8 items-center justify-center'>
           {visiblePokemon.map((pokemon) => (
             <PokemonCard key={pokemon.name} pokemon={pokemon} />
           ))}
