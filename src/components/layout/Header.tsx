@@ -20,7 +20,9 @@ export default function Header() {
 
   const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(getExportCode());
+      const code = await getExportCode();
+
+      await navigator.clipboard.writeText(code);
 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

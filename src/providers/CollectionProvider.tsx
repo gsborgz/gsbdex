@@ -9,7 +9,7 @@ interface CollectionContextValue {
   getEntry: (id: number | string) => CollectionEntry;
   toggleOwned: (id: number | string) => void;
   toggleFullArt: (id: number | string) => void;
-  getExportCode: () => string;
+  getExportCode: () => Promise<string>;
   importFromCode: (code: string) => Promise<void>;
 }
 
@@ -53,12 +53,30 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
     updateEntry(id, { fullArt: !getEntry(id).fullArt });
   };
 
-  const getExportCode = (): string => {
-    return btoa(encodeURIComponent(JSON.stringify(collection)));
+  const getExportCode = async (): Promise<string> => {
+    const response = await fetch('/api/collection/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(collection),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate export code');
+    }
+
+    const { code } = (await response.json()) as { code: string };
+
+    return code;
   };
 
   const importFromCode = async (code: string): Promise<void> => {
-    const decoded = JSON.parse(decodeURIComponent(atob(code))) as Collection;
+    const response = await fetch(`/api/collection/share/${encodeURIComponent(code)}`);
+
+    if (!response.ok) {
+      throw new Error('Invalid code');
+    }
+
+    const decoded = (await response.json()) as Collection;
 
     setCollection(decoded);
 
