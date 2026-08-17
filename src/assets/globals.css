@@ -15,6 +15,10 @@ body {
     @apply text-slate-500 dark:text-slate-400;
   }
 
+  .text-primary-reversed {
+    @apply text-slate-50 dark:text-slate-900;
+  }
+
   .link-primary {
     @apply text-slate-700 dark:text-slate-100 hover:text-slate-600 dark:hover:text-slate-200;
   }
