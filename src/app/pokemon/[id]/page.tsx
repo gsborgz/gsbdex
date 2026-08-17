@@ -13,6 +13,8 @@ import Badge from '@components/ui/Badge';
 import { Select } from '@components/ui/Select';
 import Separator from '@components/ui/Separator';
 import Card from '@components/ui/Card';
+import Checkbox from '@components/ui/Checkbox';
+import { useCollection } from '@providers/CollectionProvider';
 
 export default function PokemonDetails() {
   const router = useRouter();
@@ -91,6 +93,8 @@ function ErrorDetails({ message }: { message: string }) {
 
 function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: PokemonSpecies | null }) {
   const { t, i18n } = useTranslation();
+  const { getEntry, toggleOwned, toggleFullArt } = useCollection();
+  const entry = getEntry(pokemon.id);
   const availableVersions = getAvailableVersions(species);
   const initialDescription = getDescription(availableVersions[0].value, species, i18n.language) || t('noDescription');
   const cry = pokemon.cries.latest;
@@ -157,6 +161,11 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
             {pokemon?.types.map((type) => (
               <Badge key={type.type.name} className={`type-${type.type.name} text-slate-50 capitalize`}>{t(`type.${type.type.name}`)}</Badge>
             ))}
+          </div>
+
+          <div className='flex gap-4 mt-2'>
+            <Checkbox checked={entry.owned} onChange={() => toggleOwned(pokemon.id)} label={t('collection.owned')} />
+            <Checkbox checked={entry.fullArt} onChange={() => toggleFullArt(pokemon.id)} label={t('collection.fullArt')} />
           </div>
         </div>
 

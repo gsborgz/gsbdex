@@ -7,7 +7,7 @@ import Input from '@components/ui/Input';
 import { useTranslation } from 'react-i18next';
 import PokemonCard from './PokemonCard';
 
-export default function PokemonList({ onCardClick }: { onCardClick?: (pokemon: PokemonListItem) => void }) {
+export default function PokemonList() {
   const { t } = useTranslation();
   const [data, setData] = useState<PokemonListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +87,6 @@ export default function PokemonList({ onCardClick }: { onCardClick?: (pokemon: P
             <PokemonCard
               key={pokemon.name}
               pokemon={pokemon}
-              onClick={onCardClick}
             />
           ))}
         </div>

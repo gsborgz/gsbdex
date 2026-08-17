@@ -4,18 +4,19 @@ import Card from '@components/ui/Card';
 import { getPokemonIdFromUrl, usePokemonDetails } from '@hooks/useApi';
 import { Pokemon, PokemonListItem } from '@models/pokemon';
 import Badge from '@components/ui/Badge';
+import Checkbox from '@components/ui/Checkbox';
 import Image from 'next/image';
 import Skeleton from '@components/ui/Skeleton';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
+import { useCollection } from '@providers/CollectionProvider';
 
 interface PokemonCardProps {
   pokemon: PokemonListItem;
-  onClick?: (pokemon: PokemonListItem) => void;
 }
 
-export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
+export default function PokemonCard({ pokemon }: PokemonCardProps) {
   if (!pokemon) return null;
 
   const [loading, setLoading] = useState(true);
@@ -48,7 +49,7 @@ export default function PokemonCard({ pokemon, onClick }: PokemonCardProps) {
     return <ErrorCard message={error} />;
   }
 
-  return <NormalCard pokemon={data} onClick={(!!onClick ? () => onClick(pokemon) : onCardClick)} />;
+  return <NormalCard pokemon={data} onClick={onCardClick} />;
 }
 
 function LoadingCard() {
@@ -81,8 +82,10 @@ function ErrorCard({ message }: { message?: string }) {
   );
 }
 
-function NormalCard({ pokemon, onClick, fromTeamBuilder }: { pokemon: Pokemon, onClick: () => void, fromTeamBuilder?: boolean }) {
+function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => void }) {
   const { t } = useTranslation();
+  const { getEntry, toggleOwned, toggleFullArt } = useCollection();
+  const entry = getEntry(pokemon.id);
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const target = e.target as HTMLImageElement;
 
@@ -92,7 +95,7 @@ function NormalCard({ pokemon, onClick, fromTeamBuilder }: { pokemon: Pokemon, o
   return (
     <Card onClick={onClick} className='cursor-pointer w-58'>
       <div className='w-full flex justify-end'><Badge className='bg-slate-200/60 text-slate-600 dark:bg-slate-600/60 dark:text-slate-200'>#{pokemon.id.toString().padStart(3, '0')}</Badge></div>
-      
+
       <Image
         src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemon.id.toString().padStart(3, '0') + '.png'}
         alt={pokemon.name}
@@ -105,10 +108,9 @@ function NormalCard({ pokemon, onClick, fromTeamBuilder }: { pokemon: Pokemon, o
 
       <h3 className='text-center text-lg font-semibold capitalize text-primary'>{pokemon.name}</h3>
 
-      <div className='flex justify-center gap-2 mt-4'>
-        {pokemon?.types.map((type) => (
-          <Badge key={type.type.name} className={`type-${type.type.name} text-slate-50 capitalize`}>{t(`type.${type.type.name}`)}</Badge>
-        ))}
+      <div onClick={(e) => e.stopPropagation()} className='flex justify-center gap-4 mt-4'>
+        <Checkbox checked={entry.owned} onChange={() => toggleOwned(pokemon.id)} label={t('collection.owned')} />
+        <Checkbox checked={entry.fullArt} onChange={() => toggleFullArt(pokemon.id)} label={t('collection.fullArt')} />
       </div>
     </Card>
   );
