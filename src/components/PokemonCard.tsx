@@ -43,7 +43,7 @@ function PokemonCard({ pokemon, highlighted, cardRef }: PokemonCardProps) {
         highlighted && 'ring-4 ring-primary ring-offset-2 ring-offset-background'
       )}
     >
-      <Card onClick={onCardClick} className='cursor-pointer w-full max-w-sm md:w-58'>
+      <Card className='w-full max-w-sm md:w-58'>
         <div className='w-full flex justify-end'><Badge className='bg-slate-200/60 text-slate-600 dark:bg-slate-600/60 dark:text-slate-200'>#{pokemonId.toString().padStart(3, '0')}</Badge></div>
 
         <Image
@@ -51,9 +51,10 @@ function PokemonCard({ pokemon, highlighted, cardRef }: PokemonCardProps) {
           alt={pokemon.name}
           width={100}
           height={100}
-          className='w-32 h-32 md:w-24 md:h-24 mx-auto'
+          className='w-32 h-32 md:w-24 md:h-24 mx-auto cursor-pointer'
           data-retry-count="0"
           onError={handleImageError}
+          onClick={onCardClick}
         />
 
         <h3 className='text-center text-xl md:text-lg font-semibold capitalize text-primary'>{pokemon.name}</h3>

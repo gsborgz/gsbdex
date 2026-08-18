@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
 import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
+import { usePokemonCards } from '@hooks/usePokemonCards';
 import { ArrowLeft, Ruler, Star, Weight, Play, Pause } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
@@ -59,8 +60,70 @@ export default function PokemonDetails() {
         <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950'>
           { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && <NormalDetails pokemon={pokemon} species={species} />) }
         </div>
+
+        { !loading && !error && pokemon && <TcgCards name={pokemon.name} /> }
       </div>
     </section>
+  );
+}
+
+function TcgCards({ name }: { name: string }) {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<Awaited<ReturnType<typeof usePokemonCards>>>([]);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    usePokemonCards(name)
+      .then((cardsData) => {
+        setCards(cardsData.filter((card) => card.image));
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [name]);
+
+  return (
+    <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950 p-6'>
+      <h2 className='text-lg font-semibold mb-4'>{t('tcgCards')}</h2>
+
+      { loading && (
+        <div className='flex flex-wrap gap-4'>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className='h-64 w-46 rounded-lg' />
+          ))}
+        </div>
+      ) }
+
+      { !loading && error && (
+        <p className='text-center text-red-500'>{t('error')}</p>
+      ) }
+
+      { !loading && !error && cards.length === 0 && (
+        <p className='text-center text-muted-foreground'>{t('noCards')}</p>
+      ) }
+
+      { !loading && !error && cards.length > 0 && (
+        <div className='flex flex-wrap gap-4 justify-center'>
+          {cards.map((card) => (
+            <Image
+              key={card.id}
+              src={card.getImageURL('high', 'png')}
+              alt={card.name}
+              width={245}
+              height={342}
+              className='w-46 h-auto rounded-lg'
+            />
+          ))}
+        </div>
+      ) }
+    </div>
   );
 }
 

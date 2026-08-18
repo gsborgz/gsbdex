@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mkdir, readFile, writeFile } from 'fs/promises';
-import path from 'path';
+import { redis } from '@lib/redis';
 import { Collection, CollectionEntry } from '@models/collection';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'collection.json');
+const COLLECTION_KEY = 'collection';
 
 async function readCollection(): Promise<Collection> {
-  try {
-    const raw = await readFile(DATA_FILE, 'utf-8');
+  const collection = await redis.get<Collection>(COLLECTION_KEY);
 
-    return JSON.parse(raw);
-  } catch {
-    await mkdir(DATA_DIR, { recursive: true });
-    await writeFile(DATA_FILE, '{}', 'utf-8');
-
-    return {};
-  }
+  return collection ?? {};
 }
 
 async function writeCollection(collection: Collection): Promise<void> {
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(DATA_FILE, JSON.stringify(collection, null, 2), 'utf-8');
+  await redis.set(COLLECTION_KEY, collection);
 }
 
 export async function GET() {

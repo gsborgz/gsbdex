@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
-import path from 'path';
+import { redis } from '@lib/redis';
+import { shareKey } from '@lib/collectionShare';
 import { Collection } from '@models/collection';
-
-const SHARES_DIR = path.join(process.cwd(), 'data', 'shares');
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -13,11 +11,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Invalid collection payload' }, { status: 400 });
   }
 
-  await mkdir(SHARES_DIR, { recursive: true });
-
   const code = randomUUID();
 
-  await writeFile(path.join(SHARES_DIR, `${code}.json`), JSON.stringify(body as Collection), 'utf-8');
+  await redis.set(shareKey(code), body as Collection);
 
   return NextResponse.json({ code });
 }

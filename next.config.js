@@ -8,6 +8,12 @@ const nextConfig = {
         port: '',
         pathname: '/assets/cms2/img/pokedex/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'assets.tcgdex.net',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 }

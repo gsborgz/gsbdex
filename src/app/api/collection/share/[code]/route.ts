@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
+import { redis } from '@lib/redis';
+import { shareKey } from '@lib/collectionShare';
+import { Collection } from '@models/collection';
 
-const SHARES_DIR = path.join(process.cwd(), 'data', 'shares');
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
@@ -12,11 +12,11 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ message: 'Invalid code' }, { status: 400 });
   }
 
-  try {
-    const raw = await readFile(path.join(SHARES_DIR, `${code}.json`), 'utf-8');
+  const collection = await redis.get<Collection>(shareKey(code));
 
-    return NextResponse.json(JSON.parse(raw));
-  } catch {
+  if (!collection) {
     return NextResponse.json({ message: 'Code not found' }, { status: 404 });
   }
+
+  return NextResponse.json(collection);
 }
