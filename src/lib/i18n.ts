@@ -18,7 +18,7 @@ const resources = {
       noResults: 'Nenhum resultado encontrado',
       error: 'Erro ao carregar os dados',
       baseExperience: 'Experiência Base',
-      tcgCards: 'Cartas do TCG',
+      tcgCards: 'Cartas',
       noCards: 'Nenhuma carta encontrada para este Pokémon',
       close: 'Fechar',
       collection: {
@@ -110,7 +110,7 @@ const resources = {
       error: 'Error loading data',
       weight: 'Weight',
       baseExperience: 'Base Experience',
-      tcgCards: 'TCG Cards',
+      tcgCards: 'Cards',
       noCards: 'No cards found for this Pokémon',
       close: 'Close',
       collection: {
@@ -201,7 +201,7 @@ const resources = {
       error: 'Erreur lors du chargement des données',
       height: 'Hauteur',
       weight: 'Poids',
-      tcgCards: 'Cartes TCG',
+      tcgCards: 'Cartes',
       noCards: 'Aucune carte trouvée pour ce Pokémon',
       close: 'Fermer',
       collection: {

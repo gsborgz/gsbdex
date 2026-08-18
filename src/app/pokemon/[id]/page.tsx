@@ -5,7 +5,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
 import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
 import { usePokemonCards, matchesPokemonName } from '@hooks/usePokemonCards';
-import { ArrowLeft, Ruler, Star, Weight, Play, Pause } from 'lucide-react';
+import { ArrowLeft, Check, Play, Pause } from 'lucide-react';
+import { concatClassNames } from '@lib/utils';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
 import Skeleton from '@components/ui/Skeleton';
@@ -13,7 +14,6 @@ import Image from 'next/image';
 import Badge from '@components/ui/Badge';
 import { Select } from '@components/ui/Select';
 import Separator from '@components/ui/Separator';
-import Card from '@components/ui/Card';
 import Checkbox from '@components/ui/Checkbox';
 import { useCollection } from '@providers/CollectionProvider';
 import InfiniteScroll from '@components/InifiniteScroll';
@@ -60,10 +60,13 @@ export default function PokemonDetails() {
 
       <div className='container max-w-4xl mx-auto py-8 space-y-8'>
         <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950'>
-          { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && <NormalDetails pokemon={pokemon} species={species} />) }
+          { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && (
+            <>
+              <NormalDetails pokemon={pokemon} species={species} />
+              <TcgCards name={pokemon.name} />
+            </>
+          )) }
         </div>
-
-        { !loading && !error && pokemon && <TcgCards name={pokemon.name} /> }
       </div>
     </section>
   );
@@ -75,6 +78,7 @@ type TcgCard = Awaited<ReturnType<typeof usePokemonCards>>[number];
 
 function TcgCards({ name }: { name: string }) {
   const { t, i18n } = useTranslation();
+  const { getEntry, toggleOwned } = useCollection();
   const [loading, setLoading] = useState(true);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +127,9 @@ function TcgCards({ name }: { name: string }) {
   }, [name, i18n.language]);
 
   return (
-    <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950 p-6'>
+    <div className='cursor-default p-6 pt-0'>
+      <Separator className='mb-6' />
+
       <h2 className='text-lg font-semibold mb-4'>{t('tcgCards')}</h2>
 
       { loading && (
@@ -149,30 +155,53 @@ function TcgCards({ name }: { name: string }) {
           isFetchingNextPage={isFetchingNextPage}
         >
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
-            {cards.map((card) => (
-              <Image
-                key={card.id}
-                src={card.getImageURL('high', 'png')}
-                alt={card.name}
-                width={245}
-                height={342}
-                className='w-full h-auto rounded-lg cursor-pointer transition-transform duration-200 hover:scale-110 hover:relative hover:z-10'
-                onClick={() => setSelectedCard(card)}
-              />
-            ))}
+            {cards.map((card) => {
+              const owned = getEntry(card.id).owned;
+
+              return (
+                <div key={card.id} className='relative'>
+                  <Image
+                    src={card.getImageURL('high', 'png')}
+                    alt={card.name}
+                    width={245}
+                    height={342}
+                    className={concatClassNames(
+                      'w-full h-auto cursor-pointer transition-transform duration-200 hover:scale-110 hover:relative hover:z-10',
+                      owned && 'rounded-xl ring-[6px] ring-green-500'
+                    )}
+                    onClick={() => setSelectedCard(card)}
+                  />
+
+                  {owned && (
+                    <div className='absolute top-1.5 right-1.5 bg-green-500 text-white rounded-full p-1 shadow-md'>
+                      <Check className='h-3 w-3' strokeWidth={3} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </InfiniteScroll>
       ) }
 
       <Modal open={!!selectedCard} onClose={() => setSelectedCard(null)}>
         {selectedCard && (
-          <Image
-            src={selectedCard.getImageURL('high', 'png')}
-            alt={selectedCard.name}
-            width={735}
-            height={1026}
-            className='max-h-[85vh] w-auto rounded-lg'
-          />
+          <div className='flex flex-col items-center gap-3'>
+            <Image
+              src={selectedCard.getImageURL('high', 'png')}
+              alt={selectedCard.name}
+              width={735}
+              height={1026}
+              className='max-h-[85vh] w-auto rounded-lg'
+            />
+
+            <Checkbox
+              checked={getEntry(selectedCard.id).owned}
+              onChange={() => toggleOwned(selectedCard.id)}
+              label={t('collection.owned')}
+              className='text-slate-50 bg-black/60 px-3 py-1.5 rounded-full'
+            />
+          </div>
         )}
       </Modal>
     </div>
@@ -328,40 +357,6 @@ function NormalDetails({ pokemon, species }: { pokemon: Pokemon, species: Pokemo
         <p className='text-gray-700 dark:text-gray-300'>
           {versionDescription}
         </p>
-      </div>
-
-      <Separator className='mx-6' />
-
-      <div className='flex flex-wrap gap-4 justify-center p-6'>
-        <Card className='flex-1'>
-          <div className='flex flex-col items-center'>
-            <Ruler className='h-8 w-8 mx-auto mb-2 text-blue-500' />
-            <div className='text-2xl font-bold text-foreground'>
-              {(pokemon.height / 10).toFixed(1)}m
-            </div>
-            <div className='text-sm text-muted-foreground'>{t('height')}</div>
-          </div>
-        </Card>
-
-        <Card className='flex-1'>
-          <div className='flex flex-col items-center'>
-            <Weight className='h-8 w-8 mx-auto mb-2 text-red-500' />
-            <div className='text-2xl font-bold text-foreground'>
-              {(pokemon.weight / 10).toFixed(1)}kg
-            </div>
-            <div className='text-sm text-muted-foreground'>{t('weight')}</div>
-          </div>
-        </Card>
-
-        <Card className='flex-1'>
-          <div className='flex flex-col items-center'>
-            <Star className='h-8 w-8 mx-auto mb-2 text-yellow-300' />
-            <div className='text-2xl font-bold text-foreground'>
-              {pokemon.base_experience}
-            </div>
-            <div className='text-sm text-muted-foreground'>{t('baseExperience')}</div>
-          </div>
-        </Card>
       </div>
     </div>
   );
