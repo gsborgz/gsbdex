@@ -1,7 +1,7 @@
 'use client'
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
 import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
 import { usePokemonCards } from '@hooks/usePokemonCards';
@@ -16,6 +16,8 @@ import Separator from '@components/ui/Separator';
 import Card from '@components/ui/Card';
 import Checkbox from '@components/ui/Checkbox';
 import { useCollection } from '@providers/CollectionProvider';
+import InfiniteScroll from '@components/InifiniteScroll';
+import Modal from '@components/ui/Modal';
 
 export default function PokemonDetails() {
   const router = useRouter();
@@ -67,19 +69,31 @@ export default function PokemonDetails() {
   );
 }
 
+const CARDS_PER_PAGE = 8;
+
+type TcgCard = Awaited<ReturnType<typeof usePokemonCards>>[number];
+
 function TcgCards({ name }: { name: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
+  const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cards, setCards] = useState<Awaited<ReturnType<typeof usePokemonCards>>>([]);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<TcgCard | null>(null);
+  const pageRef = useRef(1);
 
   useEffect(() => {
+    pageRef.current = 1;
     setLoading(true);
     setError(null);
+    setCards([]);
+    setHasNextPage(false);
 
-    usePokemonCards(name)
+    usePokemonCards(name, i18n.language, 1, CARDS_PER_PAGE)
       .then((cardsData) => {
         setCards(cardsData.filter((card) => card.image));
+        setHasNextPage(cardsData.length === CARDS_PER_PAGE);
       })
       .catch((err) => {
         setError(err.message);
@@ -87,7 +101,26 @@ function TcgCards({ name }: { name: string }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [name]);
+  }, [name, i18n.language]);
+
+  const loadMoreCards = useCallback(() => {
+    const nextPage = pageRef.current + 1;
+
+    setIsFetchingNextPage(true);
+
+    usePokemonCards(name, i18n.language, nextPage, CARDS_PER_PAGE)
+      .then((cardsData) => {
+        pageRef.current = nextPage;
+        setCards((prev) => [...prev, ...cardsData.filter((card) => card.image)]);
+        setHasNextPage(cardsData.length === CARDS_PER_PAGE);
+      })
+      .catch((err) => {
+        setError(err.message);
+      })
+      .finally(() => {
+        setIsFetchingNextPage(false);
+      });
+  }, [name, i18n.language]);
 
   return (
     <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950 p-6'>
@@ -110,19 +143,38 @@ function TcgCards({ name }: { name: string }) {
       ) }
 
       { !loading && !error && cards.length > 0 && (
-        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
-          {cards.map((card) => (
-            <Image
-              key={card.id}
-              src={card.getImageURL('high', 'png')}
-              alt={card.name}
-              width={245}
-              height={342}
-              className='w-full h-auto rounded-lg'
-            />
-          ))}
-        </div>
+        <InfiniteScroll
+          onLoadMore={loadMoreCards}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+        >
+          <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
+            {cards.map((card) => (
+              <Image
+                key={card.id}
+                src={card.getImageURL('high', 'png')}
+                alt={card.name}
+                width={245}
+                height={342}
+                className='w-full h-auto rounded-lg cursor-pointer transition-transform duration-200 hover:scale-110 hover:relative hover:z-10'
+                onClick={() => setSelectedCard(card)}
+              />
+            ))}
+          </div>
+        </InfiniteScroll>
       ) }
+
+      <Modal open={!!selectedCard} onClose={() => setSelectedCard(null)}>
+        {selectedCard && (
+          <Image
+            src={selectedCard.getImageURL('high', 'png')}
+            alt={selectedCard.name}
+            width={735}
+            height={1026}
+            className='max-h-[85vh] w-auto rounded-lg'
+          />
+        )}
+      </Modal>
     </div>
   );
 }

@@ -20,6 +20,7 @@ const resources = {
       baseExperience: 'Experiência Base',
       tcgCards: 'Cartas do TCG',
       noCards: 'Nenhuma carta encontrada para este Pokémon',
+      close: 'Fechar',
       collection: {
         owned: 'Já tenho',
         fullArt: 'Full Art',
@@ -111,6 +112,7 @@ const resources = {
       baseExperience: 'Base Experience',
       tcgCards: 'TCG Cards',
       noCards: 'No cards found for this Pokémon',
+      close: 'Close',
       collection: {
         owned: 'I have it',
         fullArt: 'Full Art',
@@ -201,6 +203,7 @@ const resources = {
       weight: 'Poids',
       tcgCards: 'Cartes TCG',
       noCards: 'Aucune carte trouvée pour ce Pokémon',
+      close: 'Fermer',
       collection: {
         owned: 'Je l\'ai',
         fullArt: 'Full Art',
