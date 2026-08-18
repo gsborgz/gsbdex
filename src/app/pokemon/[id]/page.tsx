@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
 import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
-import { usePokemonCards } from '@hooks/usePokemonCards';
+import { usePokemonCards, matchesPokemonName } from '@hooks/usePokemonCards';
 import { ArrowLeft, Ruler, Star, Weight, Play, Pause } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
@@ -92,7 +92,7 @@ function TcgCards({ name }: { name: string }) {
 
     usePokemonCards(name, i18n.language, 1, CARDS_PER_PAGE)
       .then((cardsData) => {
-        setCards(cardsData.filter((card) => card.image));
+        setCards(cardsData.filter((card) => card.image && matchesPokemonName(card.name, name)));
         setHasNextPage(cardsData.length === CARDS_PER_PAGE);
       })
       .catch((err) => {
@@ -111,7 +111,7 @@ function TcgCards({ name }: { name: string }) {
     usePokemonCards(name, i18n.language, nextPage, CARDS_PER_PAGE)
       .then((cardsData) => {
         pageRef.current = nextPage;
-        setCards((prev) => [...prev, ...cardsData.filter((card) => card.image)]);
+        setCards((prev) => [...prev, ...cardsData.filter((card) => card.image && matchesPokemonName(card.name, name))]);
         setHasNextPage(cardsData.length === CARDS_PER_PAGE);
       })
       .catch((err) => {

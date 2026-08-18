@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useCollection } from '@providers/CollectionProvider';
 import { useSearch } from '@providers/SearchProvider';
 import Input from '@components/ui/Input';
+import { concatClassNames } from '@lib/utils';
 
 export default function Header() {
   const { t } = useTranslation();
@@ -68,7 +69,7 @@ export default function Header() {
           value={searchTerm}
           onChange={setSearchTerm}
           placeholder={t('searchByNamePlaceholder')}
-          className='hidden md:block flex-1 max-w-md mx-4'
+          className={concatClassNames('flex-1 max-w-md mx-4', isPokedex ? 'hidden md:block' : 'hidden')}
         />
 
         <div className='flex items-center justify-end gap-2'>
@@ -89,7 +90,7 @@ export default function Header() {
         value={searchTerm}
         onChange={setSearchTerm}
         placeholder={t('searchByNamePlaceholder')}
-        className='md:hidden px-4 pb-3'
+        className={concatClassNames('px-4 pb-3', isPokedex ? 'md:hidden' : 'hidden')}
       />
     </HeaderBar>
   );
