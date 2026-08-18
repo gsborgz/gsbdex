@@ -79,7 +79,7 @@ export default function PokemonDetails() {
             { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && (
               <>
                 <NormalDetails pokemon={pokemon} species={species} />
-                <TcgCards name={pokemon.name} />
+                <TcgCards pokemon={pokemon} species={species} />
               </>
             )) }
           </div>
@@ -102,21 +102,24 @@ export default function PokemonDetails() {
 
 const CARDS_PER_PAGE = 8;
 
-type TcgCard = Awaited<ReturnType<typeof usePokemonCards>>[number];
-
-function TcgCards({ name }: { name: string }) {
+function TcgCards({ pokemon, species }: { pokemon: Pokemon, species: PokemonSpecies | null }) {
   const { t, i18n } = useTranslation();
   const { getEntry, toggleOwned } = useCollection();
+  const name = (species && getPokemonName(species, i18n.language)) || pokemon.name;
   const [loading, setLoading] = useState(true);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cards, setCards] = useState<Awaited<ReturnType<typeof usePokemonCards>>>([]);
   const [hasNextPage, setHasNextPage] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<TcgCard | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const pageRef = useRef(1);
+  const isFetchingRef = useRef(false);
+  const pendingCardAdvance = useRef(false);
+  const selectedCard = selectedIndex !== null ? cards[selectedIndex] ?? null : null;
 
   useEffect(() => {
     pageRef.current = 1;
+    isFetchingRef.current = false;
     setLoading(true);
     setError(null);
     setCards([]);
@@ -136,8 +139,11 @@ function TcgCards({ name }: { name: string }) {
   }, [name, i18n.language]);
 
   const loadMoreCards = useCallback(() => {
+    if (isFetchingRef.current) return;
+
     const nextPage = pageRef.current + 1;
 
+    isFetchingRef.current = true;
     setIsFetchingNextPage(true);
 
     usePokemonCards(name, i18n.language, nextPage, CARDS_PER_PAGE)
@@ -151,8 +157,37 @@ function TcgCards({ name }: { name: string }) {
       })
       .finally(() => {
         setIsFetchingNextPage(false);
+        isFetchingRef.current = false;
       });
   }, [name, i18n.language]);
+
+  useEffect(() => {
+    if (!pendingCardAdvance.current) return;
+
+    pendingCardAdvance.current = false;
+    setSelectedIndex((prev) => (prev !== null && prev + 1 < cards.length ? prev + 1 : prev));
+  }, [cards]);
+
+  const goToPreviousCard = () => {
+    setSelectedIndex((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
+  };
+
+  const goToNextCard = () => {
+    setSelectedIndex((prev) => {
+      if (prev === null) return prev;
+
+      if (prev + 1 < cards.length) {
+        return prev + 1;
+      }
+
+      if (hasNextPage && !isFetchingRef.current) {
+        pendingCardAdvance.current = true;
+        loadMoreCards();
+      }
+
+      return prev;
+    });
+  };
 
   return (
     <div className='cursor-default p-6 pt-0'>
@@ -183,7 +218,7 @@ function TcgCards({ name }: { name: string }) {
           isFetchingNextPage={isFetchingNextPage}
         >
           <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
-            {cards.map((card) => {
+            {cards.map((card, index) => {
               const owned = getEntry(card.id).owned;
 
               return (
@@ -197,7 +232,7 @@ function TcgCards({ name }: { name: string }) {
                       'w-full h-auto cursor-pointer transition-transform duration-200 hover:scale-110 hover:relative hover:z-10',
                       owned && 'rounded-xl ring-2 ring-emerald-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
                     )}
-                    onClick={() => setSelectedCard(card)}
+                    onClick={() => setSelectedIndex(index)}
                   />
 
                   {owned && (
@@ -212,23 +247,45 @@ function TcgCards({ name }: { name: string }) {
         </InfiniteScroll>
       ) }
 
-      <Modal open={!!selectedCard} onClose={() => setSelectedCard(null)}>
+      <Modal open={selectedIndex !== null} onClose={() => setSelectedIndex(null)}>
         {selectedCard && (
-          <div className='flex flex-col items-center gap-3'>
-            <Image
-              src={selectedCard.getImageURL('high', 'png')}
-              alt={selectedCard.name}
-              width={735}
-              height={1026}
-              className='max-h-[85vh] w-auto rounded-lg'
-            />
+          <div className='flex items-center gap-2 md:gap-4'>
+            <button
+              type='button'
+              onClick={goToPreviousCard}
+              disabled={selectedIndex === null || selectedIndex <= 0}
+              aria-label={t('previousCard')}
+              className='cursor-pointer shrink-0 text-slate-50 hover:text-slate-300 transition-colors disabled:opacity-30 disabled:pointer-events-none'
+            >
+              <ArrowLeft className='w-6 h-6 md:w-8 md:h-8' />
+            </button>
 
-            <Checkbox
-              checked={getEntry(selectedCard.id).owned}
-              onChange={() => toggleOwned(selectedCard.id)}
-              label={t('collection.owned')}
-              className='text-slate-50 bg-black/60 px-3 py-1.5 rounded-full'
-            />
+            <div className='flex flex-col items-center gap-3'>
+              <Image
+                src={selectedCard.getImageURL('high', 'png')}
+                alt={selectedCard.name}
+                width={735}
+                height={1026}
+                className='max-h-[85vh] w-auto rounded-lg'
+              />
+
+              <Checkbox
+                checked={getEntry(selectedCard.id).owned}
+                onChange={() => toggleOwned(selectedCard.id)}
+                label={t('collection.owned')}
+                className='text-slate-50 bg-black/60 px-3 py-1.5 rounded-full'
+              />
+            </div>
+
+            <button
+              type='button'
+              onClick={goToNextCard}
+              disabled={selectedIndex === null || (selectedIndex >= cards.length - 1 && !hasNextPage)}
+              aria-label={t('nextCard')}
+              className='cursor-pointer shrink-0 text-slate-50 hover:text-slate-300 transition-colors disabled:opacity-30 disabled:pointer-events-none'
+            >
+              <ArrowRight className='w-6 h-6 md:w-8 md:h-8' />
+            </button>
           </div>
         )}
       </Modal>

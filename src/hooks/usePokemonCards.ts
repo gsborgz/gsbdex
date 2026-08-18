@@ -1,19 +1,30 @@
-import TCGdex, { Query, type SupportedLanguages } from '@tcgdex/sdk';
+import TCGdex, { Query } from '@tcgdex/sdk';
 
 const tcgdex = new TCGdex('en');
 
-const SUPPORTED_LANGUAGES: SupportedLanguages[] = ['en', 'fr', 'pt'];
+type AppSupportedLanguage = 'en' | 'fr' | 'pt';
+
+const SUPPORTED_LANGUAGES: AppSupportedLanguage[] = ['en', 'fr', 'pt'];
 
 const POCKET_SERIE_ID = 'tcgp';
+
+const POKEMON_CATEGORY_BY_LANGUAGE: Record<AppSupportedLanguage, string> = {
+  en: 'Pokemon',
+  fr: 'Pokémon',
+  pt: 'Pokémon',
+};
 
 let pocketSetIdsPromise: Promise<string[]> | null = null;
 
 export async function usePokemonCards(name: string, language?: string, page = 1, itemsPerPage = 8) {
-  tcgdex.setLang(toSupportedLanguage(language));
+  const supportedLanguage = toSupportedLanguage(language);
+
+  tcgdex.setLang(supportedLanguage);
 
   const pocketSetIds = await getPocketSetIds();
   const query = Query.create()
     .contains('name', capitalize(name))
+    .equal('category', POKEMON_CATEGORY_BY_LANGUAGE[supportedLanguage])
     .sort('localId', 'ASC');
 
   pocketSetIds.forEach((setId) => query.not.contains('set.id', setId));
@@ -38,9 +49,9 @@ function getPocketSetIds(): Promise<string[]> {
   return pocketSetIdsPromise;
 }
 
-function toSupportedLanguage(language?: string): SupportedLanguages {
-  return SUPPORTED_LANGUAGES.includes(language as SupportedLanguages)
-    ? (language as SupportedLanguages)
+function toSupportedLanguage(language?: string): AppSupportedLanguage {
+  return SUPPORTED_LANGUAGES.includes(language as AppSupportedLanguage)
+    ? (language as AppSupportedLanguage)
     : 'en';
 }
 
