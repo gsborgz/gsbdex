@@ -39,7 +39,7 @@ function PokemonCard({ pokemon, highlighted, cardRef }: PokemonCardProps) {
     <div
       ref={cardRef}
       className={concatClassNames(
-        'rounded-lg transition-shadow duration-300 scroll-mt-20',
+        'w-full max-w-sm md:w-58 rounded-lg transition-shadow duration-300 scroll-mt-20',
         highlighted && 'ring-4 ring-primary ring-offset-2 ring-offset-background'
       )}
     >

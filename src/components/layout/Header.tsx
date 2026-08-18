@@ -11,7 +11,6 @@ import { useState } from 'react';
 import { useCollection } from '@providers/CollectionProvider';
 import { useSearch } from '@providers/SearchProvider';
 import Input from '@components/ui/Input';
-import { concatClassNames } from '@lib/utils';
 
 export default function Header() {
   const { t } = useTranslation();
@@ -103,14 +102,16 @@ function SearchBar({ value, onChange, placeholder, className }: {
   className?: string;
 }) {
   return (
-    <div className={concatClassNames('relative', className)}>
-      <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 h-4 w-4' />
-      <Input
-        placeholder={placeholder}
-        value={value}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-        className='pl-10 text-xs md:text-sm'
-      />
+    <div className={className}>
+      <div className='relative'>
+        <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 h-4 w-4' />
+        <Input
+          placeholder={placeholder}
+          value={value}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+          className='pl-10 text-xs md:text-sm'
+        />
+      </div>
     </div>
   );
 }
