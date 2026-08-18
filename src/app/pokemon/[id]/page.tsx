@@ -94,9 +94,9 @@ function TcgCards({ name }: { name: string }) {
       <h2 className='text-lg font-semibold mb-4'>{t('tcgCards')}</h2>
 
       { loading && (
-        <div className='flex flex-wrap gap-4'>
+        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={index} className='h-64 w-46 rounded-lg' />
+            <Skeleton key={index} className='h-40 sm:h-64 w-full rounded-lg' />
           ))}
         </div>
       ) }
@@ -110,7 +110,7 @@ function TcgCards({ name }: { name: string }) {
       ) }
 
       { !loading && !error && cards.length > 0 && (
-        <div className='flex flex-wrap gap-4 justify-center'>
+        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4'>
           {cards.map((card) => (
             <Image
               key={card.id}
@@ -118,7 +118,7 @@ function TcgCards({ name }: { name: string }) {
               alt={card.name}
               width={245}
               height={342}
-              className='w-46 h-auto rounded-lg'
+              className='w-full h-auto rounded-lg'
             />
           ))}
         </div>
