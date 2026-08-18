@@ -3,9 +3,9 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
-import { usePokemonDetails, usePokemonSpecies } from '@hooks/useApi';
+import { usePokemonDetails, usePokemonSpecies, MIN_POKEMON_ID, MAX_POKEMON_ID } from '@hooks/useApi';
 import { usePokemonCards, matchesPokemonName } from '@hooks/usePokemonCards';
-import { ArrowLeft, Check, Play, Pause } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Play, Pause } from 'lucide-react';
 import { concatClassNames } from '@lib/utils';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/Button';
@@ -27,8 +27,12 @@ export default function PokemonDetails() {
   const [error, setError] = useState<string | null>(null);
   const [pokemon, setPokemon] = useState<Pokemon | null>(null);
   const [species, setSpecies] = useState<PokemonSpecies | null>(null);
+  const currentId = parseInt(id, 10);
   const returnToList = () => {
     router.push('/');
+  };
+  const navigateToPokemon = (targetId: number) => {
+    router.push(`/pokemon/${targetId}`);
   };
 
   useEffect(() => {
@@ -58,14 +62,38 @@ export default function PokemonDetails() {
         </Button>
       </div>
 
-      <div className='container max-w-4xl mx-auto py-8 space-y-8'>
-        <div className='cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950'>
-          { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && (
-            <>
-              <NormalDetails pokemon={pokemon} species={species} />
-              <TcgCards name={pokemon.name} />
-            </>
-          )) }
+      <div className='container max-w-4xl mx-auto py-8'>
+        <div className='flex items-start gap-2 md:gap-4'>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='shrink-0 mt-16 md:mt-20 lg:mt-28'
+            onClick={() => navigateToPokemon(currentId - 1)}
+            disabled={currentId <= MIN_POKEMON_ID}
+            aria-label={t('previousPokemon')}
+          >
+            <ArrowLeft className='w-5 h-5' />
+          </Button>
+
+          <div className='flex-1 min-w-0 cursor-default border border-slate-400 shadow-md rounded-lg bg-slate-50 dark:bg-slate-950'>
+            { (loading && <LoadingDetails />) || (error && <ErrorDetails message={error} />) || (pokemon && (
+              <>
+                <NormalDetails pokemon={pokemon} species={species} />
+                <TcgCards name={pokemon.name} />
+              </>
+            )) }
+          </div>
+
+          <Button
+            variant='ghost'
+            size='icon'
+            className='shrink-0 mt-16 md:mt-20 lg:mt-28'
+            onClick={() => navigateToPokemon(currentId + 1)}
+            disabled={currentId >= MAX_POKEMON_ID}
+            aria-label={t('nextPokemon')}
+          >
+            <ArrowRight className='w-5 h-5' />
+          </Button>
         </div>
       </div>
     </section>

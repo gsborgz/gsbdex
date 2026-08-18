@@ -2,8 +2,11 @@ import { Pokemon, PokemonListResponse, PokemonSpecies } from '@models/pokemon';
 
 const BASE_URL = 'https://pokeapi.co/api/v2';
 
+export const MIN_POKEMON_ID = 1;
+export const MAX_POKEMON_ID = 1025;
+
 export function usePokemonList() {
-  return fetchPokeApiData<PokemonListResponse>(`pokemon?limit=1025&offset=0`);
+  return fetchPokeApiData<PokemonListResponse>(`pokemon?limit=${MAX_POKEMON_ID}&offset=0`);
 };
 
 export function usePokemonDetails(idOrName: string) {
