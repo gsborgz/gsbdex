@@ -1,91 +1,34 @@
 'use client'
 
 import Card from '@components/ui/Card';
-import { getPokemonIdFromUrl, usePokemonDetails } from '@hooks/useApi';
-import { Pokemon, PokemonListItem } from '@models/pokemon';
+import { getPokemonIdFromUrl } from '@hooks/useApi';
+import { PokemonListItem } from '@models/pokemon';
 import Badge from '@components/ui/Badge';
 import Checkbox from '@components/ui/Checkbox';
 import Image from 'next/image';
-import Skeleton from '@components/ui/Skeleton';
-import { useEffect, useState } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { useCollection } from '@providers/CollectionProvider';
+import { concatClassNames } from '@lib/utils';
 
 interface PokemonCardProps {
   pokemon: PokemonListItem;
+  highlighted?: boolean;
+  cardRef?: (el: HTMLDivElement | null) => void;
 }
 
-export default function PokemonCard({ pokemon }: PokemonCardProps) {
+function PokemonCard({ pokemon, highlighted, cardRef }: PokemonCardProps) {
   if (!pokemon) return null;
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<Pokemon | null>(null);
+  const { t } = useTranslation();
+  const { getEntry, toggleOwned, toggleFullArt } = useCollection();
   const pokemonId = getPokemonIdFromUrl(pokemon.url);
   const router = useRouter();
+  const entry = getEntry(pokemonId);
   const onCardClick = () => {
     router.push(`/pokemon/${pokemonId}`);
   };
-
-  useEffect(() => {
-    usePokemonDetails(pokemonId.toString())
-      .then((pokemonData) => {
-        setData(pokemonData);
-      })
-      .catch((err) => {
-        setError(err.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
-
-  if (loading) {
-    return <LoadingCard />;
-  }
-
-  if (error) {
-    return <ErrorCard message={error} />;
-  }
-
-  return <NormalCard pokemon={data} onClick={onCardClick} />;
-}
-
-function LoadingCard() {
-  return (
-    <Card className='bg-card rounded-lg p-4 shadow-sm w-full max-w-sm md:w-58'>
-      <div className='text-center space-y-3'>
-        <div className='w-full flex justify-end'><Skeleton className='h-5 w-12 rounded-full' /></div>
-
-        <Skeleton className='h-32 w-32 md:h-24 md:w-24 mx-auto rounded-full' />
-        <Skeleton className='h-4 w-20 mx-auto' />
-
-        <div className='flex justify-center gap-2 mt-4'>
-          <Skeleton className='h-5 w-12 rounded-full' />
-          <Skeleton className='h-5 w-12 rounded-full' />
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-function ErrorCard({ message }: { message?: string }) {
-  const { t } = useTranslation();
-
-  return (
-    <Card className="cursor-pointer">
-      <div className="text-center text-red-500">
-        <p>{t('errorLoadingPokemon', { message: message || t('unknownError') })}</p>
-      </div>
-    </Card>
-  );
-}
-
-function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => void }) {
-  const { t } = useTranslation();
-  const { getEntry, toggleOwned, toggleFullArt } = useCollection();
-  const entry = getEntry(pokemon.id);
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     const target = e.target as HTMLImageElement;
 
@@ -93,25 +36,35 @@ function NormalCard({ pokemon, onClick }: { pokemon: Pokemon, onClick: () => voi
   };
 
   return (
-    <Card onClick={onClick} className='cursor-pointer w-full max-w-sm md:w-58'>
-      <div className='w-full flex justify-end'><Badge className='bg-slate-200/60 text-slate-600 dark:bg-slate-600/60 dark:text-slate-200'>#{pokemon.id.toString().padStart(3, '0')}</Badge></div>
+    <div
+      ref={cardRef}
+      className={concatClassNames(
+        'rounded-lg transition-shadow duration-300 scroll-mt-20',
+        highlighted && 'ring-4 ring-primary ring-offset-2 ring-offset-background'
+      )}
+    >
+      <Card onClick={onCardClick} className='cursor-pointer w-full max-w-sm md:w-58'>
+        <div className='w-full flex justify-end'><Badge className='bg-slate-200/60 text-slate-600 dark:bg-slate-600/60 dark:text-slate-200'>#{pokemonId.toString().padStart(3, '0')}</Badge></div>
 
-      <Image
-        src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemon.id.toString().padStart(3, '0') + '.png'}
-        alt={pokemon.name}
-        width={100}
-        height={100}
-        className='w-32 h-32 md:w-24 md:h-24 mx-auto'
-        data-retry-count="0"
-        onError={handleImageError}
-      />
+        <Image
+          src={`https://assets.pokemon.com/assets/cms2/img/pokedex/detail/` + pokemonId.toString().padStart(3, '0') + '.png'}
+          alt={pokemon.name}
+          width={100}
+          height={100}
+          className='w-32 h-32 md:w-24 md:h-24 mx-auto'
+          data-retry-count="0"
+          onError={handleImageError}
+        />
 
-      <h3 className='text-center text-xl md:text-lg font-semibold capitalize text-primary'>{pokemon.name}</h3>
+        <h3 className='text-center text-xl md:text-lg font-semibold capitalize text-primary'>{pokemon.name}</h3>
 
-      <div onClick={(e) => e.stopPropagation()} className='flex justify-center gap-4 mt-4'>
-        <Checkbox checked={entry.owned} onChange={() => toggleOwned(pokemon.id)} label={t('collection.owned')} />
-        <Checkbox checked={entry.fullArt} onChange={() => toggleFullArt(pokemon.id)} label={t('collection.fullArt')} />
-      </div>
-    </Card>
+        <div onClick={(e) => e.stopPropagation()} className='flex justify-center gap-4 mt-4'>
+          <Checkbox checked={entry.owned} onChange={() => toggleOwned(pokemonId)} label={t('collection.owned')} />
+          <Checkbox checked={entry.fullArt} onChange={() => toggleFullArt(pokemonId)} label={t('collection.fullArt')} />
+        </div>
+      </Card>
+    </div>
   );
 }
+
+export default memo(PokemonCard);
