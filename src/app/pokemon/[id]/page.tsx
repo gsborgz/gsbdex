@@ -167,13 +167,13 @@ function TcgCards({ name }: { name: string }) {
                     height={342}
                     className={concatClassNames(
                       'w-full h-auto cursor-pointer transition-transform duration-200 hover:scale-110 hover:relative hover:z-10',
-                      owned && 'rounded-xl ring-[6px] ring-green-500'
+                      owned && 'rounded-xl ring-2 ring-emerald-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
                     )}
                     onClick={() => setSelectedCard(card)}
                   />
 
                   {owned && (
-                    <div className='absolute top-1.5 right-1.5 bg-green-500 text-white rounded-full p-1 shadow-md'>
+                    <div className='absolute top-1.5 right-1.5 bg-emerald-500 text-white rounded-full p-1 shadow-md ring-2 ring-white dark:ring-slate-900'>
                       <Check className='h-3 w-3' strokeWidth={3} />
                     </div>
                   )}
