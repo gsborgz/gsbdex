@@ -7,6 +7,7 @@ import Footer from '@components/layout/Footer';
 import { I18nProvider } from '@providers/I18nProvider';
 import { CollectionProvider } from '@providers/CollectionProvider';
 import { SearchProvider } from '@providers/SearchProvider';
+import { FilterProvider } from '@providers/FilterProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,9 +26,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <I18nProvider>
           <CollectionProvider>
             <SearchProvider>
-              <Header />
-              <Main>{ children }</Main>
-              <Footer />
+              <FilterProvider>
+                <Header />
+                <Main>{ children }</Main>
+                <Footer />
+              </FilterProvider>
             </SearchProvider>
           </CollectionProvider>
         </I18nProvider>

@@ -11,6 +11,8 @@ interface CollectionContextValue {
   toggleFullArt: (id: number | string) => void;
   getExportCode: () => Promise<string>;
   importFromCode: (code: string) => Promise<void>;
+  ownedCount: number;
+  fullArtCount: number;
 }
 
 const CollectionContext = createContext<CollectionContextValue | null>(null);
@@ -44,6 +46,9 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
   const getEntry = (id: number | string): CollectionEntry => {
     return collection[id.toString()] || EMPTY_ENTRY;
   };
+
+  const ownedCount = Object.values(collection).filter((entry) => entry.owned).length;
+  const fullArtCount = Object.values(collection).filter((entry) => entry.fullArt).length;
 
   const toggleOwned = (id: number | string) => {
     updateEntry(id, { owned: !getEntry(id).owned });
@@ -88,7 +93,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <CollectionContext.Provider value={{ getEntry, toggleOwned, toggleFullArt, getExportCode, importFromCode }}>
+    <CollectionContext.Provider value={{ getEntry, toggleOwned, toggleFullArt, getExportCode, importFromCode, ownedCount, fullArtCount }}>
       {children}
     </CollectionContext.Provider>
   );

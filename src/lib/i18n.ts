@@ -27,6 +27,8 @@ const resources = {
       close: 'Fechar',
       collection: {
         owned: 'Já tenho',
+        progress: 'Você tem {{owned}} de {{total}} Pokémon',
+        fullArtProgress: 'Você tem {{owned}} de {{total}} Full Arts',
         fullArt: 'Full Art',
         copyCode: 'Copiar código de backup',
         copyCodeSuccess: 'Código copiado!',
@@ -35,6 +37,12 @@ const resources = {
         pasteCodePrompt: 'Cole o código de backup da sua coleção:',
         importSuccess: 'Coleção carregada com sucesso!',
         invalidCode: 'Código inválido.',
+      },
+      filter: {
+        title: 'Filtrar',
+        notOwned: 'Não tenho',
+        owned: 'Já tenho',
+        fullArt: 'Full Art',
       },
       type: {
         normal: 'Normal',
@@ -123,6 +131,8 @@ const resources = {
       close: 'Close',
       collection: {
         owned: 'I have it',
+        progress: 'You have {{owned}} of {{total}} Pokémon',
+        fullArtProgress: 'You have {{owned}} of {{total}} Full Arts',
         fullArt: 'Full Art',
         copyCode: 'Copy backup code',
         copyCodeSuccess: 'Code copied!',
@@ -131,6 +141,12 @@ const resources = {
         pasteCodePrompt: 'Paste your collection backup code:',
         importSuccess: 'Collection loaded successfully!',
         invalidCode: 'Invalid code.',
+      },
+      filter: {
+        title: 'Filter',
+        notOwned: 'Not owned',
+        owned: 'I have it',
+        fullArt: 'Full Art',
       },
       type: {
         normal: 'Normal',
@@ -218,6 +234,8 @@ const resources = {
       close: 'Fermer',
       collection: {
         owned: 'Je l\'ai',
+        progress: 'Vous avez {{owned}} sur {{total}} Pokémon',
+        fullArtProgress: 'Vous avez {{owned}} sur {{total}} Full Arts',
         fullArt: 'Full Art',
         copyCode: 'Copier le code de sauvegarde',
         copyCodeSuccess: 'Code copié !',
@@ -226,6 +244,12 @@ const resources = {
         pasteCodePrompt: 'Collez le code de sauvegarde de votre collection :',
         importSuccess: 'Collection chargée avec succès !',
         invalidCode: 'Code invalide.',
+      },
+      filter: {
+        title: 'Filtrer',
+        notOwned: 'Je ne l\'ai pas',
+        owned: 'Je l\'ai',
+        fullArt: 'Full Art',
       },
       baseExperience: 'Expérience de base',
       type: {

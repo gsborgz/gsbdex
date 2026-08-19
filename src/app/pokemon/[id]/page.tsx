@@ -232,6 +232,7 @@ function TcgCards({ pokemon, species }: { pokemon: Pokemon, species: PokemonSpec
                       'w-full h-auto cursor-pointer transition-transform duration-200 hover:scale-110 hover:relative hover:z-10',
                       owned && 'rounded-xl ring-2 ring-emerald-400 ring-offset-2 ring-offset-white dark:ring-offset-slate-900'
                     )}
+                    onError={handleImageError}
                     onClick={() => setSelectedIndex(index)}
                   />
 
@@ -267,6 +268,7 @@ function TcgCards({ pokemon, species }: { pokemon: Pokemon, species: PokemonSpec
                 width={735}
                 height={1026}
                 className='max-h-[85vh] w-auto rounded-lg'
+                onError={handleImageError}
               />
 
               <Checkbox

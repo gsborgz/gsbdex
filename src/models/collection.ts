@@ -4,3 +4,5 @@ export interface CollectionEntry {
 }
 
 export type Collection = Record<string, CollectionEntry>;
+
+export type CollectionFilterOption = 'notOwned' | 'owned' | 'fullArt';

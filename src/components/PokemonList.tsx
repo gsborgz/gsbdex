@@ -1,9 +1,11 @@
 import InfiniteScroll from '@components/InifiniteScroll';
-import { usePokemonList } from '@hooks/useApi';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { MAX_POKEMON_ID, getPokemonIdFromUrl, usePokemonList } from '@hooks/useApi';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { PokemonListItem } from '@models/pokemon';
 import { useTranslation } from 'react-i18next';
 import { useDebouncedSearchTerm } from '@providers/SearchProvider';
+import { useCollection } from '@providers/CollectionProvider';
+import { useCollectionFilters } from '@providers/FilterProvider';
 import PokemonCard from './PokemonCard';
 
 const MIN_SEARCH_LENGTH = 2;
@@ -11,6 +13,8 @@ const SEARCH_TRAILING_BUFFER = 12;
 
 export default function PokemonList() {
   const { t } = useTranslation();
+  const { ownedCount, fullArtCount, getEntry } = useCollection();
+  const { filters } = useCollectionFilters();
   const debouncedSearchTerm = useDebouncedSearchTerm();
   const [data, setData] = useState<PokemonListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,9 +27,22 @@ export default function PokemonList() {
   const cardRefCallbacks = useRef<Map<string, (el: HTMLDivElement | null) => void>>(new Map());
   const hadSearchExpansion = useRef(false);
   const searchExpansionRef = useRef(0);
+  const filteredData = useMemo(() => {
+    if (filters.size === 0) return data;
+
+    return data.filter((pokemon) => {
+      const entry = getEntry(getPokemonIdFromUrl(pokemon.url));
+
+      return (
+        (filters.has('owned') && entry.owned) ||
+        (filters.has('notOwned') && !entry.owned) ||
+        (filters.has('fullArt') && entry.fullArt)
+      );
+    });
+  }, [data, filters, getEntry]);
   const displayedCount = Math.max(baseCount, searchExpansion);
-  const visiblePokemon = data.slice(0, displayedCount);
-  const hasNextPage = displayedCount < data.length;
+  const visiblePokemon = filteredData.slice(0, displayedCount);
+  const hasNextPage = displayedCount < filteredData.length;
 
   useEffect(() => {
     searchExpansionRef.current = searchExpansion;
@@ -43,9 +60,9 @@ export default function PokemonList() {
     setBaseCount(prev => {
       const current = Math.max(prev, searchExpansionRef.current);
 
-      return Math.min(current + itemsPerPage, data.length);
+      return Math.min(current + itemsPerPage, filteredData.length);
     });
-  }, [data.length]);
+  }, [filteredData.length]);
   const getCardRef = (name: string) => {
     let callback = cardRefCallbacks.current.get(name);
 
@@ -87,7 +104,7 @@ export default function PokemonList() {
       return;
     }
 
-    const matchIndex = data.findIndex(pokemon => pokemon.name.toLowerCase().includes(term));
+    const matchIndex = filteredData.findIndex(pokemon => pokemon.name.toLowerCase().includes(term));
 
     if (matchIndex === -1) {
       setSearchExpansion(0);
@@ -95,9 +112,9 @@ export default function PokemonList() {
       return;
     }
 
-    setSearchExpansion(Math.min(matchIndex + 1 + SEARCH_TRAILING_BUFFER, data.length));
-    setHighlightedName(data[matchIndex].name);
-  }, [debouncedSearchTerm, data]);
+    setSearchExpansion(Math.min(matchIndex + 1 + SEARCH_TRAILING_BUFFER, filteredData.length));
+    setHighlightedName(filteredData[matchIndex].name);
+  }, [debouncedSearchTerm, filteredData]);
 
   useEffect(() => {
     if (!highlightedName) return;
@@ -119,6 +136,11 @@ export default function PokemonList() {
 
   return (
     <div className='flex flex-col gap-6'>
+      <div className='flex flex-wrap justify-center gap-x-6 gap-y-1 text-center text-sm text-slate-500'>
+        <p>{t('collection.progress', { owned: ownedCount, total: MAX_POKEMON_ID })}</p>
+        <p>{t('collection.fullArtProgress', { owned: fullArtCount, total: MAX_POKEMON_ID })}</p>
+      </div>
+
       <InfiniteScroll
         onLoadMore={loadMorePokemon}
         hasNextPage={hasNextPage}

@@ -5,13 +5,18 @@ import { LanguageToggle } from '@components/LanguageToggle';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@components/ui/Button';
-import { BookAlert, Copy, CopyCheck, ClipboardPaste, Search } from 'lucide-react';
+import { BookAlert, Copy, CopyCheck, ClipboardPaste, ListFilter, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { useCollection } from '@providers/CollectionProvider';
 import { useSearch } from '@providers/SearchProvider';
+import { useCollectionFilters } from '@providers/FilterProvider';
+import { CollectionFilterOption } from '@models/collection';
 import Input from '@components/ui/Input';
 import { concatClassNames } from '@lib/utils';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@components/ui/DropdownMenu';
+
+const FILTER_OPTIONS: CollectionFilterOption[] = ['notOwned', 'owned', 'fullArt'];
 
 export default function Header() {
   const { t } = useTranslation();
@@ -65,12 +70,16 @@ export default function Header() {
           </Link>
         </div>
 
-        <SearchBar
-          value={searchTerm}
-          onChange={setSearchTerm}
-          placeholder={t('searchByNamePlaceholder')}
-          className={concatClassNames('flex-1 max-w-md mx-4', isPokedex ? 'hidden md:block' : 'hidden')}
-        />
+        <div className={concatClassNames('flex-1 items-center gap-2 max-w-md mx-4', isPokedex ? 'hidden md:flex' : 'hidden')}>
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder={t('searchByNamePlaceholder')}
+            className='flex-1'
+          />
+
+          <CollectionFilterDropdown />
+        </div>
 
         <div className='flex items-center justify-end gap-2'>
           <Button variant='ghost' size='icon' onClick={handleCopyCode} title={t('collection.copyCode')}>
@@ -86,13 +95,49 @@ export default function Header() {
         </div>
       </div>
 
-      <SearchBar
-        value={searchTerm}
-        onChange={setSearchTerm}
-        placeholder={t('searchByNamePlaceholder')}
-        className={concatClassNames('px-4 pb-3', isPokedex ? 'md:hidden' : 'hidden')}
-      />
+      <div className={concatClassNames('flex items-center gap-2 px-4 pb-3', isPokedex ? 'md:hidden' : 'hidden')}>
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder={t('searchByNamePlaceholder')}
+          className='flex-1'
+        />
+
+        <CollectionFilterDropdown />
+      </div>
     </HeaderBar>
+  );
+}
+
+function CollectionFilterDropdown() {
+  const { t } = useTranslation();
+  const { filters, toggleFilter } = useCollectionFilters();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant='ghost' size='icon' title={t('filter.title')}>
+          <ListFilter className='w-5 h-5' />
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align='end' className='min-w-40'>
+        {FILTER_OPTIONS.map((option) => (
+          <label
+            key={option}
+            className='flex items-center gap-2 cursor-pointer select-none rounded-sm px-2 py-1.5 text-sm text-slate-950 dark:text-slate-50 hover:bg-slate-300 dark:hover:bg-slate-700'
+          >
+            <input
+              type='checkbox'
+              checked={filters.has(option)}
+              onChange={() => toggleFilter(option)}
+              className='h-4 w-4 rounded border-slate-400 accent-slate-950 dark:accent-slate-50 cursor-pointer'
+            />
+            {t(`filter.${option}`)}
+          </label>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
