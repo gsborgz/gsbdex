@@ -55,6 +55,23 @@ export default function PokemonDetails() {
       });
   }, [id]);
 
+  // Warms the cache for the neighboring pages so the prev/next arrows feel
+  // instant instead of triggering a fresh PokeAPI round trip on click.
+  useEffect(() => {
+    const prevId = currentId - 1;
+    const nextId = currentId + 1;
+
+    if (prevId >= MIN_POKEMON_ID) {
+      usePokemonDetails(prevId.toString()).catch(() => {});
+      usePokemonSpeciesById(prevId.toString()).catch(() => {});
+    }
+
+    if (nextId <= MAX_POKEMON_ID) {
+      usePokemonDetails(nextId.toString()).catch(() => {});
+      usePokemonSpeciesById(nextId.toString()).catch(() => {});
+    }
+  }, [currentId]);
+
   return (
     <section className='flex flex-col gap-4'>
       <div className='container'>

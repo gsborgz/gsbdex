@@ -16,9 +16,29 @@ const POKEMON_CATEGORY_BY_LANGUAGE: Record<AppSupportedLanguage, string> = {
 
 let pocketSetIdsPromise: Promise<string[]> | null = null;
 
-export async function usePokemonCards(name: string, language?: string, page = 1, itemsPerPage = 8) {
-  const supportedLanguage = toSupportedLanguage(language);
+const cardsCache = new Map<string, ReturnType<typeof fetchPokemonCards>>();
 
+export function usePokemonCards(name: string, language?: string, page = 1, itemsPerPage = 8) {
+  const supportedLanguage = toSupportedLanguage(language);
+  const cacheKey = `${supportedLanguage}|${name.toLowerCase()}|${page}|${itemsPerPage}`;
+  const cached = cardsCache.get(cacheKey);
+
+  if (cached) {
+    return cached;
+  }
+
+  const request = fetchPokemonCards(name, supportedLanguage, page, itemsPerPage).catch((err) => {
+    cardsCache.delete(cacheKey);
+
+    throw err;
+  });
+
+  cardsCache.set(cacheKey, request);
+
+  return request;
+};
+
+async function fetchPokemonCards(name: string, supportedLanguage: AppSupportedLanguage, page: number, itemsPerPage: number) {
   tcgdex.setLang(supportedLanguage);
 
   const pocketSetIds = await getPocketSetIds();
