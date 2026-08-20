@@ -19,6 +19,10 @@ export function usePokemonSpecies(url: string) {
   return fetchPokeApiData<PokemonSpecies>(`pokemon-species/${id}`);
 };
 
+export function usePokemonSpeciesById(idOrName: string) {
+  return fetchPokeApiData<PokemonSpecies>(`pokemon-species/${idOrName}`);
+};
+
 export function getPokemonIdFromUrl(url: string): number {
   const parts = url.split('/');
 

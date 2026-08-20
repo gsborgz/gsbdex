@@ -3,7 +3,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Pokemon, PokemonSpecies } from '@models/pokemon';
-import { usePokemonDetails, usePokemonSpecies, MIN_POKEMON_ID, MAX_POKEMON_ID } from '@hooks/useApi';
+import { usePokemonDetails, usePokemonSpeciesById, MIN_POKEMON_ID, MAX_POKEMON_ID } from '@hooks/useApi';
 import { usePokemonCards, matchesPokemonName } from '@hooks/usePokemonCards';
 import { ArrowLeft, ArrowRight, Check, Play, Pause } from 'lucide-react';
 import { concatClassNames } from '@lib/utils';
@@ -37,8 +37,10 @@ export default function PokemonDetails() {
 
   useEffect(() => {
     const getPokemonDetails = async (id: string) => {
-      const pokemonData = await usePokemonDetails(id);
-      const speciesData = await usePokemonSpecies(pokemonData.species.url);
+      const [pokemonData, speciesData] = await Promise.all([
+        usePokemonDetails(id),
+        usePokemonSpeciesById(id),
+      ]);
 
       setPokemon(pokemonData);
       setSpecies(speciesData);
